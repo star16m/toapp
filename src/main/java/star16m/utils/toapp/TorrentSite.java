@@ -21,6 +21,7 @@ public class TorrentSite {
 	private String name;
 	@NotNull
 	private String searchUrl;
+	
 	@NotNull
 	private String selector;
 	@NotNull
