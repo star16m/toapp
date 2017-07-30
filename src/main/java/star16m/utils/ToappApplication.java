@@ -20,5 +20,4 @@ public class ToappApplication {
 		bean.setPoolSize(1);
 		return bean;
 	}
-
 }

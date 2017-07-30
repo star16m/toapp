@@ -1,4 +1,4 @@
-package star16m.utils.toapp;
+package star16m.utils.toapp.torrent;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
-public class TorrentService {
+public class ToService {
 	@Autowired
 	private TorrentRepository repository;
 	public List<Torrent> selectAll() {
