@@ -1,10 +1,16 @@
 package star16m.utils.toapp.site;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.validation.Valid;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,32 +27,95 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("site")
 @Slf4j
 public class SiteController {
-
+	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 	@Autowired
 	private SiteRepository siteRepository;
 	
 	@GetMapping
-	public String site(Map<String, Object> model) {
+	public String site(Model model) {
 		log.debug("try findAll torrent site.");
 		List<Site> siteList = siteRepository.findAll();
 		log.debug("successfully findAll torrent site. size:" + siteList.size());
-		model.put("sites", siteList);
-		model.put("sitecreate", new Site.Create());
+		model.addAttribute("sites", siteList);
+		model.addAttribute("siteResult", "");
+		model.addAttribute("siteDetailResult", "");
+		model.addAttribute("siteCreate", new Site.Create());
 		return "site";
 	}
 	@PostMapping
-	public String createTorrentSite(@ModelAttribute @Valid Site.Create siteCreate, BindingResult result, Model model) {
+	public String createTorrentSite(@ModelAttribute("siteCreate") @Valid Site.Create siteCreate, BindingResult result, Model model) {
 	
 		log.info("try createTorrentsite:::" + siteCreate);
 		log.info("binding result:" + result);
 		log.info("model:" + model);
-		model.addAttribute("sitecreate", siteCreate);
 		if (!result.hasErrors()) {
 			log.info("try collect site info.");
+			Document doc = null;
+			try {
+				String url = siteCreate.getSiteSearchUrl();
+				if (siteCreate.getSiteSearchUrl().contains("[KEYWORD]")) {
+					if (siteCreate.getSiteKeyword()!=null && siteCreate.getSiteKeyword().length() > 0) {
+						log.info("replace keyword as [{}]", siteCreate.getSiteKeyword());
+						url = url.replaceAll("\\[KEYWORD\\]", siteCreate.getSiteKeyword());
+						log.info("url is [{}]", url);
+					} else {
+						log.info("keyword [KEYWORD] is not replaced.");
+						result.rejectValue("siteKeyword", null, "[KEYWORD] 를 입력해 주세요.");
+						return "site";
+					}
+				}
+				doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
+				if (doc != null) {
+					Elements elements = doc.select(siteCreate.getSiteSelector());
+					for (Element e : elements) {
+						if (!e.tagName().equalsIgnoreCase("a")) {
+							log.info("there is not a tag. [{}]", e.tagName());
+							result.rejectValue("siteSelector", null, "a tag 만 조회 가능합니다.");
+							return "site";
+						}
+					}
+					model.addAttribute("siteResult", elements.toString());
+					log.info("try to connect torrent detail page [{}]", elements.get(0));
+					Element element = elements.get(0);
+					Document itemDoc = Jsoup.connect(element.attr("abs:href")).userAgent(USER_AGENT).get();
+					model.addAttribute("siteDetailResult", itemDoc);
+					if (!StringUtils.isEmpty(siteCreate.getTorrentNameSelector())) {
+						model.addAttribute("torrentNameResult", itemDoc.select(siteCreate.getTorrentNameSelector()).text());
+					}
+					if (!StringUtils.isEmpty(siteCreate.getTorrentSizeSelector())) {
+						model.addAttribute("torrentSizeResult", itemDoc.select(siteCreate.getTorrentSizeSelector()).text());
+					}
+					if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashSelector())) {
+						String magnetHashResult = itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml();
+						if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashReplace())) {
+							Pattern p = Pattern.compile(siteCreate.getTorrentMagnetHashReplace());
+							Matcher m = p.matcher(magnetHashResult);
+							if (m.find()) {
+								magnetHashResult = m.group(1);
+							}
+						}
+						model.addAttribute("torrentMagnetHashResult", magnetHashResult);
+					}
+				}
+			} catch (IOException e) {
+				model.addAttribute("site.result.error", e.getMessage());
+			}
 		}
-//		Site site = siteRepository.save(torrentSite);
-//		log.debug("successfully created torrent site[" + site + "]");
-		//model.put("site.create", siteCreate);
+		if (!result.hasErrors()) {
+			if (model.containsAttribute("siteDetailResult") && model.containsAttribute("torrentNameResult") && model.containsAttribute("torrentSizeResult") && model.containsAttribute("torrentMagnetHashResult")) {
+				Site site = new Site();
+				site.setName(siteCreate.getSiteName());
+				site.setSearchUrl(siteCreate.getSiteSearchUrl());
+				site.setSelector(siteCreate.getSiteSelector());
+				site.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
+				site.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
+				site.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
+				site.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
+				site.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
+				site.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
+				siteRepository.save(site);
+			}
+		}
 		return "site";
 	}
 }

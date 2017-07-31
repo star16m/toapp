@@ -18,6 +18,6 @@ public class TorrentCollector {
 	private TorrentRepository repository;
 	@Scheduled(cron="*/5 * * * * *")
 	public void collect() {
-		log.info("count is " + repository.count());
+//		log.info("count is " + repository.count());
 	}
 }

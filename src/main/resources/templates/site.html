@@ -100,8 +100,6 @@
 	                                <th>A-Tag Selector</th>
 	                                <th>name</th>
 	                                <th>nameRe</th>
-	                                <th>url</th>
-	                                <th>urlRe</th>
 	                                <th>size</th>
 	                                <th>sizeRe</th>
 	                                <th>magnet</th>
@@ -116,12 +114,10 @@
 	                                <td th:text="${site.selector}">selector</td>
 	                                <td th:text="${site.torrentNameReplace}">torrentNameSelector</td>
 	                                <td th:text="${site.torrentNameReplace}">torrentNameReplace</td>
-	                                <td th:text="${site.torrentUrlSelector}">torrentUrlSelector</td>
-	                                <td th:text="${site.torrentUrlReplace}">torrentUrlReplace</td>
 	                                <td th:text="${site.torrentSizeSelector}">torrentSizeSelector</td>
 	                                <td th:text="${site.torrentSizeReplace}">torrentSizeReplace</td>
-	                                <td th:text="${site.torrentMagnetSelector}">torrentMagnetSelector</td>
-	                                <td th:text="${site.torrentMagnetReplace}">torrentMagnetReplace</td>
+	                                <td th:text="${site.torrentMagnetHashSelector}">torrentMagnetSelector</td>
+	                                <td th:text="${site.torrentMagnetHashReplace}">torrentMagnetReplace</td>
 	                            </tr>
 	                        </tbody>
 	                    </table>
@@ -137,34 +133,82 @@
 						<div class="panel-heading">사이트 입력</div>
 						
 						<div class="panel-body">
+							<form role="form" class="form" method="post" th:action="@{/site}" th:object="${siteCreate}">
 							<div class="row">
 								<div class="col-lg-6">
-									<form role="form" class="form" method="post" th:action="@{/site}" th:object="${sitecreate}">
-										<div class="form-group">
+										<div class="form-group" th:classappend="${#fields.hasErrors('siteName')}? 'has-error'">
 											<label class="control-label" for="siteName">사이트명</label>
 											<input class="form-control" id="siteName" placeholder="사이트명" th:field="*{siteName}"/>
-											<span th:if="${#fields.hasErrors('siteName')}" th:errors="*{siteName}" class="help-block">error!</span>
+											<span th:if="${#fields.hasErrors('siteName')}" th:errors="*{siteName}" class="text-danger">error!</span>
 										</div>
-										<div class="form-group">
+										<div class="form-group" th:classappend="${#fields.hasErrors('siteSearchUrl')}? 'has-error'">
 											<label class="control-label" for="siteSearchUrl">URL</label>
 											<input class="form-control" id="siteSearchUrl" placeholder="[KEYWORD] 를 포함한 search url" th:field="*{siteSearchUrl}"/>
+											<span th:if="${#fields.hasErrors('siteSearchUrl')}" th:errors="*{siteSearchUrl}" class="help-block">error!</span>
 										</div>
-										<div class="form-group">
+										<div class="form-group" th:classappend="${#fields.hasErrors('siteKeyword')}? 'has-error'">
+											<label class="control-label" for="siteKeyword">검색문자열</label>
+											<input class="form-control" id="siteKeyword" placeholder="[KEYWORD] 에 입력할 검색어" th:field="*{siteKeyword}"/>
+											<span th:if="${#fields.hasErrors('siteKeyword')}" th:errors="*{siteKeyword}" class="help-block">error!</span>
+										</div>
+										<div class="form-group" th:classappend="${#fields.hasErrors('siteSelector')}? 'has-error'">
 											<label class="control-label" for="siteSelector">selector</label>
 											<input class="form-control" id="siteSelector" placeholder="a tag를 리스트업 하는 selector" th:field="*{siteSelector}"/>
+											<span th:if="${#fields.hasErrors('siteSelector')}" th:errors="*{siteSelector}" class="help-block">error!</span>
 										</div>
+										
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentNameSelector')}? 'has-error'">
+											<label class="control-label" for="torrentNameSelector">토렌트-이름-Selector</label>
+											<input class="form-control" id="torrentNameSelector" placeholder="토렌트-이름-Selector" th:field="*{torrentNameSelector}" />
+											<span th:if="${#fields.hasErrors('torrentNameSelector')}" th:errors="*{torrentNameSelector}" class="text-danger">error!</span>
+											<span th:if="${torrentNameResult}" th:text="${torrentNameResult}">torrent name result</span>
+										</div>
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentNameReplace')}? 'has-error'">
+											<label class="control-label" for="torrentNameReplace">토렌트-이름-Replace</label>
+											<input class="form-control" id="torrentNameReplace" placeholder="토렌트-이름-Replace" th:field="*{torrentNameReplace}" />
+											<span th:if="${#fields.hasErrors('torrentNameReplace')}" th:errors="*{torrentNameReplace}" class="text-danger">error!</span>
+										</div>
+										
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentSizeSelector')}? 'has-error'">
+											<label class="control-label" for="torrentSizeSelector">토렌트-Size-Selector</label>
+											<input class="form-control" id="torrentSizeSelector" placeholder="토렌트-Size-Selector" th:field="*{torrentSizeSelector}" />
+											<span th:if="${#fields.hasErrors('torrentSizeSelector')}" th:errors="*{torrentSizeSelector}" class="text-danger">error!</span>
+											<span th:if="${torrentSizeResult}" th:text="${torrentSizeResult}">torrent size result</span>
+										</div>
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentSizeReplace')}? 'has-error'">
+											<label class="control-label" for="torrentSizeReplace">토렌트-Size-Replace</label>
+											<input class="form-control" id="torrentSizeReplace" placeholder="토렌트-Size-Replace" th:field="*{torrentSizeReplace}" />
+											<span th:if="${#fields.hasErrors('torrentSizeReplace')}" th:errors="*{torrentSizeReplace}" class="text-danger">error!</span>
+										</div>
+										
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentMagnetHashSelector')}? 'has-error'">
+											<label class="control-label" for="torrentMagnetHashSelector">토렌트-Magnet-Selector</label>
+											<input class="form-control" id="torrentMagnetHashSelector" placeholder="토렌트-MagnetHash-Selector" th:field="*{torrentMagnetHashSelector}" />
+											<span th:if="${#fields.hasErrors('torrentMagnetHashSelector')}" th:errors="*{torrentMagnetHashSelector}" class="text-danger">error!</span>
+											<span th:if="${torrentMagnetHashResult}" th:text="${torrentMagnetHashResult}">torrent magnet hash result</span>
+										</div>
+										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentMagnetHashReplace')}? 'has-error'">
+											<label class="control-label" for="torrentMagnetHashReplace">토렌트-Magnet-Replace</label>
+											<input class="form-control" id="torrentMagnetHashReplace" placeholder="토렌트-Magnet-Replace" th:field="*{torrentMagnetHashReplace}" />
+											<span th:if="${#fields.hasErrors('torrentMagnetHashReplace')}" th:errors="*{torrentMagnetHashReplace}" class="text-danger">error!</span>
+										</div>
+										
 										<div class="form-group">
 											<button type="submit" class="btn btn-success btn-lg">check</button>
 										</div>
-									</form>
 								</div>
 								<div class="col-lg-6">
 									<div class="form-group">
-										<label>RESULT</label>
-										<textarea class="form-control" rows="8" disabled="disabled"></textarea>
+										<label>리스트 페이지</label>
+										<textarea class="form-control" rows="5" disabled="disabled" th:utext="${siteResult}"></textarea>
+									</div>
+									<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}">
+										<label>상세 페이지</label>
+										<textarea class="form-control" rows="5" disabled="disabled" th:utext="${siteDetailResult}"></textarea>
 									</div>
 								</div>
 							</div>
+							</form>
 						</div>
 					</div>
 				</div>
