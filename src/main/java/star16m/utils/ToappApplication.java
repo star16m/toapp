@@ -1,5 +1,6 @@
 package star16m.utils;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -19,5 +20,9 @@ public class ToappApplication {
 		ScheduledExecutorFactoryBean bean = new ScheduledExecutorFactoryBean();
 		bean.setPoolSize(1);
 		return bean;
+	}
+	@Bean
+	public ModelMapper modelMapper() {
+		return new ModelMapper();
 	}
 }

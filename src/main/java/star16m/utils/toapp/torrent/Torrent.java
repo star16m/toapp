@@ -1,8 +1,12 @@
 package star16m.utils.toapp.torrent;
 
+import java.util.Date;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
@@ -15,8 +19,8 @@ import lombok.ToString;
 @ToString
 public class Torrent {
 
-	@Id @GeneratedValue
-	private Long id;
+	@Id @NotNull
+	private String magnetCode;
 	@NotNull
 	private String title;
 	@NotNull
@@ -24,6 +28,13 @@ public class Torrent {
 	@NotNull
 	private String size;
 	@NotNull
-	private String magnetCode;
-	private String description;
+	private String siteName;
+	@NotNull
+	private String keyword;
+	@NotNull
+	private boolean download;
+	private String dateString;
+	@Column(insertable=false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date downloadDate;
 }

@@ -1,22 +1,23 @@
 package star16m.utils.toapp.torrent;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.site.Site;
-import star16m.utils.toapp.site.SiteController;
-import star16m.utils.toapp.site.SiteRepository;
+import star16m.utils.toapp.keyword.Keyword;
+import star16m.utils.toapp.keyword.KeywordRepository;
+import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 @Controller
 @RequestMapping("torrent")
@@ -24,22 +25,64 @@ import star16m.utils.toapp.site.SiteRepository;
 public class TorrentController {
 
 	@Autowired
-	private SiteRepository siteRepository;
+	private TorrentRepository torrentRepository;
+	@Autowired
+	private KeywordRepository keywordRepository;
+	@Autowired
+	private TorrentCollector collector;
 	
-	@RequestMapping(method=RequestMethod.GET)
-	public String site(Map<String, Object> model) {
+	@GetMapping
+	public String torrent(Model model) {
 		log.debug("try findAll torrent site.");
-		List<Site> siteList = siteRepository.findAll();
-		log.debug("successfully findAll torrent site. size:" + siteList.size());
-		model.put("sites", siteList);
-		return "site";
+		List<Torrent> torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescUrlDesc();
+		List<Keyword> keywordList = keywordRepository.findAll();
+		log.debug("successfully findAll torrent site. size:" + torrentList.size());
+		model.addAttribute("torrents", torrentList);
+		model.addAttribute("keywords", keywordList);
+		model.addAttribute("currentKeyword", "");
+		
+		return "torrent";
 	}
-	@RequestMapping(method=RequestMethod.POST)
-	public ResponseEntity<?> createTorrentSite(@Param("torrentSite") Site torrentSite) {
-	
-		log.debug("try createTorrentsite:::" + torrentSite);
-		Site site = siteRepository.save(torrentSite);
-		log.debug("successfully created torrent site[" + site + "]");
-		return new ResponseEntity<>(site, HttpStatus.OK);
+	@GetMapping("{keyword}")
+	public String torrent(@PathVariable String keyword, Model model) {
+		log.debug("try find by keyword torrent site. keyword=[{}]", keyword);
+		List<Torrent> torrentList = torrentRepository.findTorrentByKeywordOrderByDateStringDescUrlDesc(keyword);
+		List<Keyword> keywordList = keywordRepository.findAll();
+		log.debug("successfully findAll torrent site. size:" + torrentList.size());
+		model.addAttribute("torrents", torrentList);
+		model.addAttribute("keywords", keywordList);
+		model.addAttribute("currentKeyword", keyword);
+		return "torrent";
+	}
+
+	@PatchMapping("download/{magnetHash}")
+	public String createTorrent(@PathVariable String magnetHash, @RequestParam String currentKeyword, Model model) {
+		log.info("Current keyword = {}", currentKeyword);
+		log.info("MODEL[{}]" + model);
+		log.info("patched torrent ::: " + magnetHash);
+		Torrent torrent = torrentRepository.findOne(magnetHash);
+		torrent.setDownload(true);
+		torrent.setDownloadDate(new Date());
+		torrentRepository.save(torrent);
+		log.info("target torrent = [{}]", torrent);
+		String encodedString = "";
+		try {
+			encodedString = URLEncoder.encode(currentKeyword, "UTF-8").replaceAll("\\+", "%20");
+		} catch (UnsupportedEncodingException e) {
+			log.warn(e.getMessage());
+		}
+		return "redirect:/torrent/" + encodedString;
+	}
+	@PatchMapping("collect")
+	public String collectTorrent(@RequestParam String currentKeyword, Model model) {
+		log.info("CALLED collectTorrent{}", currentKeyword);
+		collector.collect(currentKeyword);
+		String encodedString = "";
+		try {
+			encodedString = URLEncoder.encode(currentKeyword, "UTF-8").replaceAll("\\+", "%20");
+		} catch (UnsupportedEncodingException e) {
+			log.warn(e.getMessage());
+		}
+		return "redirect:/torrent/" + encodedString;
 	}
 }

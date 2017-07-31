@@ -67,6 +67,11 @@ public class SiteController {
 				doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
 				if (doc != null) {
 					Elements elements = doc.select(siteCreate.getSiteSelector());
+					log.info("list elements {}", elements.toString());
+					if (elements == null || elements.size() == 0) {
+						model.addAttribute("siteResult", "there is no result");
+						return "site";
+					}
 					for (Element e : elements) {
 						if (!e.tagName().equalsIgnoreCase("a")) {
 							log.info("there is not a tag. [{}]", e.tagName());
@@ -78,23 +83,16 @@ public class SiteController {
 					log.info("try to connect torrent detail page [{}]", elements.get(0));
 					Element element = elements.get(0);
 					Document itemDoc = Jsoup.connect(element.attr("abs:href")).userAgent(USER_AGENT).get();
+					log.info("DETAIL PAGE {}", itemDoc);
 					model.addAttribute("siteDetailResult", itemDoc);
 					if (!StringUtils.isEmpty(siteCreate.getTorrentNameSelector())) {
-						model.addAttribute("torrentNameResult", itemDoc.select(siteCreate.getTorrentNameSelector()).text());
+						model.addAttribute("torrentNameResult", replaceGroup(itemDoc.select(siteCreate.getTorrentNameSelector()).text(), siteCreate.getTorrentNameReplace()));
 					}
 					if (!StringUtils.isEmpty(siteCreate.getTorrentSizeSelector())) {
-						model.addAttribute("torrentSizeResult", itemDoc.select(siteCreate.getTorrentSizeSelector()).text());
+						model.addAttribute("torrentSizeResult", replaceGroup(itemDoc.select(siteCreate.getTorrentSizeSelector()).text(), siteCreate.getTorrentSizeReplace()));
 					}
 					if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashSelector())) {
-						String magnetHashResult = itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml();
-						if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashReplace())) {
-							Pattern p = Pattern.compile(siteCreate.getTorrentMagnetHashReplace());
-							Matcher m = p.matcher(magnetHashResult);
-							if (m.find()) {
-								magnetHashResult = m.group(1);
-							}
-						}
-						model.addAttribute("torrentMagnetHashResult", magnetHashResult);
+						model.addAttribute("torrentMagnetHashResult", replaceGroup(itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml(), siteCreate.getTorrentMagnetHashReplace()));
 					}
 				}
 			} catch (IOException e) {
@@ -114,8 +112,20 @@ public class SiteController {
 				site.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
 				site.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
 				siteRepository.save(site);
+				return site(model);
 			}
 		}
 		return "site";
+	}
+	private String replaceGroup(String orgString, String patternString) {
+		String replaceString = new String(orgString);
+		if (!StringUtils.isEmpty(patternString)) {
+			Pattern p = Pattern.compile(patternString);
+			Matcher m = p.matcher(replaceString);
+			if (m.find()) {
+				replaceString = m.group(1);
+			}
+		}
+		return replaceString;
 	}
 }
