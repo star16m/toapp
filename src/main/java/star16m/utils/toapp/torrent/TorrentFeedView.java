@@ -1,8 +1,8 @@
 package star16m.utils.toapp.torrent;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,10 +41,18 @@ public class TorrentFeedView extends AbstractRssFeedView {
 
 	protected List<Item> buildFeedItems(Map<String, Object> model, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
+/*
 	    return torrentRepository.findTorrentByDownload(true)
 	    		.stream()
                 .map(this::createItem)
                 .collect(Collectors.toList());
+*/
+            List<Torrent> torrentList = torrentRepository.findTorrentByDownload(true);
+            List<Item> torrentList2 = new ArrayList<Item>();
+            for (Torrent torrent : torrentList) {
+                torrentList2.add(this.createItem(torrent));
+            }
+            return torrentList2;
 	}
     private Item createItem(Torrent torrent) {
         Item item = new Item();

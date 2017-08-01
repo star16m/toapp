@@ -63,10 +63,10 @@ public class TorrentCollector {
 	}
 	public void collect(String keywordString) {
 		log.info("try to collect by keyword [{}]", keywordString);
-		Keyword keyword = keywordRepository.findByKeyword(keywordString);
+		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
 		log.info("found keyword [{}]", keyword);
 		if (keyword != null) {
-			List<Site> siteList = siteRepository.findAll();
+			final List<Site> siteList = siteRepository.findAll();
 			if (siteList != null && siteList.size() > 0) {
 				new Thread(new Runnable() {
 					@Override
