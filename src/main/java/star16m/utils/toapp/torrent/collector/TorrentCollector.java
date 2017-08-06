@@ -36,12 +36,14 @@ public class TorrentCollector {
 	private KeywordRepository keywordRepository;
 	@Autowired
 	private TorrentRepository torrentRepository;
-	@Scheduled(cron="*/10 * * * * *")
+	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
+/*
 		if (true) {
 			return;
-//			log.info("disable scheduled");
+			log.info("disable scheduled");
 		}
+*/
 		List<Site> siteList = siteRepository.findAll();
 		List<Keyword> keywordList = keywordRepository.findAll();
 		boolean collected = false;
