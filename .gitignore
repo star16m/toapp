@@ -1,5 +1,5 @@
 target/
-toapp_db/
+
 !.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
@@ -15,6 +15,7 @@ toapp_db/
 *.iws
 *.iml
 *.ipr
+*.db
 
 ### NetBeans ###
 nbproject/private/
