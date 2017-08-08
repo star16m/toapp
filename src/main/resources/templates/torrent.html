@@ -17,6 +17,22 @@
 <!-- #################### CONTENT #################### -->
 <section layout:fragment="content">
 <div class="row">
+
+        <div>
+          <div class="pull-right">
+          	<a role="button" class="btn btn-primary pull-right" href="/torrent/">전체보기</a>
+          </div>
+          <span th:each="keyword : ${keywords}">
+           <a role="button" class="btn btn-primary btn-xs" th:classappend="${keyword.keyword} == ${currentKeyword} ? 'btn-info'" th:text="${keyword.keyword}" th:href="@{'/torrent/' + ${keyword.keyword}}"></a>
+          </span>
+          <div class="pull-right">
+          <form action="#" th:if="${#strings.length(currentKeyword) > 0}" th:action="@{/torrent/collect}" th:method="patch">
+          	<span ></span>
+          	<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
+          	<button type="submit" class="btn btn-info pull-right">바로실행</button>
+          </form>
+          </div>
+         </div>
  <div class="panel-body container">
      <div class="table-responsive">
          <table class="table table-striped table-bordered table-hover">
