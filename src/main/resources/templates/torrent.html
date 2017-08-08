@@ -25,21 +25,25 @@
                      <th>제목</th>
                      <th>일자</th>
                      <th>URL</th>
-                     <th>Magnet</th>
+                     <!-- 
+                      <th>Magnet</th>
+                      -->
                      <th>Download</th>
                  </tr>
              </thead>
              <tbody>
                  <tr th:each="torrent : ${torrents}">
-                     <td th:text="${torrent.title}">title</td>
-                     <td th:text="${torrent.dateString}">dateString</td>
-                     <td ><a role="button" target="_blank" class="btn btn-default" th:href="@{${torrent.url}}">실제사이트</a></td>
+                     <td class="col-md-3" th:text="${torrent.title}">title</td>
+                     <td class="col-md-3" th:text="${torrent.dateString}">dateString</td>
+                     <td class="col-md-3"><a role="button" target="_blank" class="btn btn-default" th:href="@{${torrent.url}}">실제사이트</a></td>
+                     <!-- 
                      <td th:text="${torrent.magnetCode}">magnetHash</td>
-                     <td >
-         	<form action="#" th:unless="${torrent.download}" th:action="@{'/torrent/download/{hash}'(hash=${torrent.magnetCode})}" th:method="patch" >
-         		<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
-         		<button type="submit" class="btn btn-info">Download</button>
-             </form>
+                      -->
+                     <td class="col-md-3">
+			         	 <form action="#" th:unless="${torrent.download}" th:action="@{'/torrent/download/{hash}'(hash=${torrent.magnetCode})}" th:method="patch" >
+			         		<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
+			         		<button type="submit" class="btn btn-info">Download</button>
+			             </form>
                      </td>
                  </tr>
              </tbody>
