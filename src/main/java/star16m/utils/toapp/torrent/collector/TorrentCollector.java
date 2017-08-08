@@ -139,7 +139,9 @@ public class TorrentCollector {
 					t.setTitle(torrentName);
 					String dateString = replaceGroup(torrentName, "(\\d{6,8})");
 					if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
-						dateString = "------";
+						dateString = "--------";
+					} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
+						dateString = "20" + dateString;
 					}
 					t.setDateString(dateString);
 					t.setSize(torrentSize);
