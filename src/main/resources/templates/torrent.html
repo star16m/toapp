@@ -34,6 +34,7 @@
              <tbody>
                  <tr th:each="torrent : ${torrents}">
                      <td class="col-md-3" th:if="${#strings.length(torrent.title)} gt 30" th:text="${#strings.substring(torrent.title,0,30) + '…'}">title</td>
+                     <td class="col-md-3" th:if="${#strings.length(torrent.title)} le 30" th:text="${torrent.title}">title</td>
                      <td class="col-md-3" th:text="${torrent.dateString}">dateString</td>
                      <td class="col-md-3"><a role="button" target="_blank" class="btn btn-default" th:href="@{${torrent.url}}">실제사이트</a></td>
                      <!-- 
