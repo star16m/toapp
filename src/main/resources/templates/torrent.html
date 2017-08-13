@@ -13,7 +13,7 @@
 <section layout:fragment="page-title">
    	<h1 class="page-header">Torrent</h1>
 	<div class="dropdown">
-		<button class="btn btn-default dropdown-toggle btn-xs" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">
+		<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">
 			Torrent<span class="caret"></span>
 		</button>
 		<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
@@ -49,7 +49,7 @@
                     <td class="col-md-3" th:if="${#strings.length(torrent.title)} le 30" th:text="${torrent.title}">title</td>
                     
                     <td class="col-md-3" th:text="${torrent.dateString}">dateString</td>
-                    <td class="col-md-3" th:text="${torrent.size}">size</td>
+                    <td class="col-md-3" th:text="${#strings.abbreviate(torrent.size, 12)}">size</td>
                     <!-- 
                     <td class="col-md-3"><a role="button" target="_blank" class="btn btn-default" th:href="@{${torrent.url}}">실제사이트</a></td>
                     <td th:text="${torrent.magnetCode}">magnetHash</td>
