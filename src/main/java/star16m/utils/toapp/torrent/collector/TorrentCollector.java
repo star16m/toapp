@@ -2,6 +2,7 @@ package star16m.utils.toapp.torrent.collector;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -32,7 +33,7 @@ import star16m.utils.toapp.torrent.TorrentRepository;
 @Slf4j
 public class TorrentCollector {
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
-	private static final List<String> targetDateString = new ArrayList<String>();
+	public static final List<String> targetDateString = new ArrayList<String>();
 	@Autowired
 	private SiteRepository siteRepository;
 	@Autowired
@@ -59,6 +60,14 @@ public class TorrentCollector {
 			}
 		}
 			
+	}
+	
+	public static List<String> getTargetLastDays(int lastDays) {
+		if (targetDateString.size() <= 0) {
+			resetTargetDateString();
+		}
+		Collections.reverse(targetDateString);
+		return targetDateString.subList(0, Math.min(lastDays, targetDateString.size()));
 	}
 	/**
 	 * 매일

@@ -18,4 +18,6 @@ public interface TorrentRepository extends JpaRepository<Torrent, String>{
 	public List<Torrent> findTorrentByDownload(boolean download);
 	@Transactional
 	public void deleteByDateStringNotIn(List<String> targetDateStringList);
+	
+	public Long countByDateStringIn(List<String> targetDateStringList);
 }

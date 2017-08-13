@@ -31,9 +31,11 @@
 	                <tr th:each="keyword : ${keywords}">
 	                    <td th:text="${keyword.id}">id</td>
 	                    <td th:text="${keyword.keyword}">keyword</td>
-	                    <td >
+	                    <td class="text-center">
 				        	<form action="#" th:action="@{'/keyword/{id}'(id=${keyword.id})}" th:method="delete" >
-				        		<button type="submit" class="btn btn-info">Delete</button>
+				        		<button type="submit" class="btn btn-warning btn-sm">Delete</button>
+				        		<!-- 
+				        		 -->
 				            </form>
 	                    </td>
 	                </tr>

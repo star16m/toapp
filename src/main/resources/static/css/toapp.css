@@ -2,3 +2,11 @@
   float: left;
   margin-left: 10px;
 }
+
+thead tr th {
+	text-align: center;
+}
+
+tbody tr td {
+    vertical-align: middle!important;
+}
