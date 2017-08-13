@@ -16,4 +16,6 @@ public interface TorrentRepository extends JpaRepository<Torrent, String>{
 	@Transactional
 	public boolean existsByUrl(String detailUrl);
 	public List<Torrent> findTorrentByDownload(boolean download);
+	@Transactional
+	public void deleteByDateStringNotIn(List<String> targetDateStringList);
 }

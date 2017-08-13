@@ -1,12 +1,15 @@
 package star16m.utils.toapp.torrent.collector;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.transaction.Transactional;
 
+import org.joda.time.DateTime;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -29,6 +32,7 @@ import star16m.utils.toapp.torrent.TorrentRepository;
 @Slf4j
 public class TorrentCollector {
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+	private static final List<String> targetDateString = new ArrayList<String>();
 	@Autowired
 	private SiteRepository siteRepository;
 	@Autowired
@@ -37,12 +41,6 @@ public class TorrentCollector {
 	private TorrentRepository torrentRepository;
 	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
-/*
-		if (true) {
-			return;
-			log.info("disable scheduled");
-		}
-*/
 		List<Site> siteList = siteRepository.findAll();
 		List<Keyword> keywordList = keywordRepository.findAll();
 		boolean collected = false;
@@ -62,7 +60,29 @@ public class TorrentCollector {
 		}
 			
 	}
+	/**
+	 * 매일
+	 */
+//	@Scheduled(cron="*/10 * * * * *")
+	@Scheduled(cron="0 5 12 * * *")
+	public void resetTarget() {
+		int days = resetTargetDateString();
+		log.info("delete torrent files that older than {} days.", days);
+		torrentRepository.deleteByDateStringNotIn(targetDateString);
+	}
+	private static int resetTargetDateString() {
+		targetDateString.clear();
+		int days = 15;
+		DateTime endDate = new DateTime(new Date());
+		for (int i = 0; i < days; i++) {
+			targetDateString.add(endDate.minusDays(i).toString("yyyyMMdd"));
+		}
+		return days;
+	}
 	public void collect(String keywordString) {
+		if (targetDateString.size() <= 0) {
+			resetTargetDateString();
+		}
 		log.info("try to collect by keyword [{}]", keywordString);
 		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
 		log.info("found keyword [{}]", keyword);
@@ -141,6 +161,10 @@ public class TorrentCollector {
 						dateString = "--------";
 					} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
 						dateString = "20" + dateString;
+					}
+					if (!targetDateString.contains(dateString)) {
+						log.warn("{} is not target date[{}]!.", torrentName, dateString);
+						continue;
 					}
 					t.setDateString(dateString);
 					t.setSize(torrentSize);
