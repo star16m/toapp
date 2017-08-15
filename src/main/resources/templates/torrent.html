@@ -21,6 +21,12 @@
 			<li role="separator" class="divider"></li>
 		    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
   		</ul>
+	<div class="pull-right">
+		<form action="#" th:if="${#strings.length(currentKeyword) > 0}" th:action="@{/torrent/collect}" th:method="patch">
+				<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
+			<button type="submit" class="btn btn-info pull-right">바로실행</button>
+ 		</form>
+	</div>
 	</div>
 </section>
 
