@@ -11,16 +11,19 @@
 
 <!-- #################### PAGE-TITLE #################### -->
 <section layout:fragment="page-title">
-   	<h1 class="page-header">Torrent</h1>
-	<div class="dropdown">
-		<button class="btn btn-default dropdown-toggle btn-xs" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">
-			Torrent<span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-			<li ><a th:href="@{'/torrent/'}" >전체보기</a></li>
-			<li role="separator" class="divider"></li>
-		    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
-  		</ul>
+   	<div class="page-header">
+   		<h1 class="inline-h1">Torrent</h1>
+		<div class="btn-group pull-right">
+			<a class="btn btn-primary" th:href="@{'/torrent/'+${currentKeyword}}" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">전체보기</a>
+			<a class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				<span class="caret"></span>
+			</a>
+			<ul class="dropdown-menu" aria-labelledby="dropdownMenu">
+				<li ><a th:href="@{'/torrent/'}" >전체보기</a></li>
+				<li role="separator" class="divider"></li>
+			    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
+	  		</ul>
+		</div>
 	</div>
 </section>
 

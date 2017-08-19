@@ -10,3 +10,6 @@ thead tr th {
 tbody tr td {
     vertical-align: middle!important;
 }
+h1.inline-h1 {
+  display: inline;
+}

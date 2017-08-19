@@ -32,9 +32,15 @@ public class TorrentController {
 	private TorrentCollector collector;
 	
 	@GetMapping
-	public String torrent(Model model) {
+	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, Model model) {
 		log.debug("try findAll torrent site.");
-		List<Torrent> torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescUrlDesc();
+		List<Torrent> torrentList = null;
+		if (lastDays != null && lastDays > 0) {
+			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
+			torrentList = torrentRepository.findTorrentByDateStringIn(lastDaysList);
+		} else {
+			torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescUrlDesc();
+		}
 		List<Keyword> keywordList = keywordRepository.findAll();
 		log.debug("successfully findAll torrent site. size:" + torrentList.size());
 		model.addAttribute("torrents", torrentList);
@@ -44,7 +50,7 @@ public class TorrentController {
 		return "torrent";
 	}
 	@GetMapping("{keyword}")
-	public String torrent(@PathVariable String keyword, Model model) {
+	public String torrentKeyword(@PathVariable String keyword, Model model) {
 		log.debug("try find by keyword torrent site. keyword=[{}]", keyword);
 		List<Torrent> torrentList = torrentRepository.findTorrentByKeywordOrderByDateStringDescUrlDesc(keyword);
 		List<Keyword> keywordList = keywordRepository.findAll();
