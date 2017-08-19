@@ -11,6 +11,7 @@
 
 <!-- #################### PAGE-TITLE #################### -->
 <section layout:fragment="page-title">
+<<<<<<< HEAD
    	<div class="page-header">
    		<h1 class="inline-h1">Torrent</h1>
 		<div class="btn-group pull-right">
@@ -24,6 +25,24 @@
 			    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
 	  		</ul>
 		</div>
+=======
+   	<h1 class="page-header">Torrent</h1>
+	<div class="dropdown">
+		<button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">
+			Torrent<span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+			<li ><a th:href="@{'/torrent/'}" >전체보기</a></li>
+			<li role="separator" class="divider"></li>
+		    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
+  		</ul>
+	<div class="pull-right">
+		<form action="#" th:if="${#strings.length(currentKeyword) > 0}" th:action="@{/torrent/collect}" th:method="patch">
+				<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
+			<button type="submit" class="btn btn-info pull-right">바로실행</button>
+ 		</form>
+	</div>
+>>>>>>> 136aab4f8bd88d20fd3c2ca7a6a517422e873907
 	</div>
 </section>
 
@@ -52,7 +71,7 @@
                     <td class="col-md-3" th:if="${#strings.length(torrent.title)} le 30" th:text="${torrent.title}">title</td>
                     
                     <td class="col-md-3" th:text="${torrent.dateString}">dateString</td>
-                    <td class="col-md-3" th:text="${torrent.size}">size</td>
+                    <td class="col-md-3" th:text="${#strings.abbreviate(torrent.size, 12)}">size</td>
                     <!-- 
                     <td class="col-md-3"><a role="button" target="_blank" class="btn btn-default" th:href="@{${torrent.url}}">실제사이트</a></td>
                     <td th:text="${torrent.magnetCode}">magnetHash</td>
