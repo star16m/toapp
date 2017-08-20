@@ -34,6 +34,8 @@ public class Torrent {
 	@NotNull
 	private boolean download;
 	private String dateString;
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date torrentFindDate;
 	@Column(insertable=false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date downloadDate;

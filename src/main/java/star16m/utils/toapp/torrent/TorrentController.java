@@ -37,9 +37,9 @@ public class TorrentController {
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
-			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescUrlDesc(lastDaysList);
+			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(lastDaysList);
 		} else {
-			torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescUrlDesc();
+			torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
 		}
 		List<Keyword> keywordList = keywordRepository.findAll();
 		log.debug("successfully findAll torrent site. size:" + torrentList.size());
@@ -52,7 +52,7 @@ public class TorrentController {
 	@GetMapping("{keyword}")
 	public String torrentKeyword(@PathVariable String keyword, Model model) {
 		log.debug("try find by keyword torrent site. keyword=[{}]", keyword);
-		List<Torrent> torrentList = torrentRepository.findTorrentByKeywordOrderByDateStringDescUrlDesc(keyword);
+		List<Torrent> torrentList = torrentRepository.findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(keyword);
 		List<Keyword> keywordList = keywordRepository.findAll();
 		log.debug("successfully findAll torrent site. size:" + torrentList.size());
 		model.addAttribute("torrents", torrentList);

@@ -178,6 +178,7 @@ public class TorrentCollector {
 					t.setMagnetCode(torrentMagnetHash);
 					t.setSiteName(site.getName());
 					t.setKeyword(keyword.getKeyword());
+					t.setTorrentFindDate(new Date());
 					if (torrentRepository.exists(t.getMagnetCode())) {
 						log.info("already exists torrent[{}]", t);
 					} else {

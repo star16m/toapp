@@ -8,15 +8,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
 public interface TorrentRepository extends JpaRepository<Torrent, String>{
-	public List<Torrent> findAllTorrentByOrderByDateStringDescUrlDesc();
+	public List<Torrent> findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
 	@Modifying
 	@Transactional
 	public void deleteByKeyword(String keyword);
-	public List<Torrent> findTorrentByKeywordOrderByDateStringDescUrlDesc(String keyword);
+	public List<Torrent> findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(String keyword);
 	@Transactional
 	public boolean existsByUrl(String detailUrl);
 	public List<Torrent> findTorrentByDownload(boolean download);
-	public List<Torrent> findTorrentByDateStringInOrderByDateStringDescUrlDesc(List<String> targetDateStringList);
+	public List<Torrent> findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(List<String> targetDateStringList);
 	@Transactional
 	public void deleteByDateStringNotIn(List<String> targetDateStringList);
 	
