@@ -21,7 +21,7 @@
 	    <div class="table-responsive">
 	        <table class="table table-striped table-bordered table-hover">
 	            <thead>
-	                <tr>
+	                <tr class="info">
 	                    <th>#</th>
 	                    <th>키워드</th>
 	                    <th>삭제</th>
@@ -29,11 +29,11 @@
 	            </thead>
 	            <tbody>
 	                <tr th:each="keyword : ${keywords}">
-	                    <td th:text="${keyword.id}">id</td>
+	                    <td class="text-center" th:text="${keyword.id}">id</td>
 	                    <td th:text="${keyword.keyword}">keyword</td>
 	                    <td class="text-center">
 				        	<form action="#" th:action="@{'/keyword/{id}'(id=${keyword.id})}" th:method="delete" >
-				        		<button type="submit" class="btn btn-warning btn-sm">Delete</button>
+				        		<button type="submit" class="btn btn-warning btn-xs">Delete</button>
 				        		<!-- 
 				        		 -->
 				            </form>
