@@ -66,7 +66,6 @@ public class TorrentCollector {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
-		Collections.reverse(targetDateString);
 		return targetDateString.subList(0, Math.min(lastDays, targetDateString.size()));
 	}
 	/**
@@ -86,6 +85,7 @@ public class TorrentCollector {
 		for (int i = 0; i < days; i++) {
 			targetDateString.add(endDate.minusDays(i).toString("yyyyMMdd"));
 		}
+		Collections.reverse(targetDateString);
 		return days;
 	}
 	public void collect(String keywordString) {
