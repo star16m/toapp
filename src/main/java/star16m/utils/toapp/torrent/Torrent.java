@@ -1,5 +1,8 @@
 package star16m.utils.toapp.torrent;
 
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -19,6 +22,7 @@ import lombok.ToString;
 @ToString
 public class Torrent {
 
+	private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 	@Id @NotNull
 	private String magnetCode;
 	@NotNull
@@ -39,4 +43,15 @@ public class Torrent {
 	@Column(insertable=false)
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date downloadDate;
+	public Date getDate() {
+		if (dateString != null) {
+			try {
+				return FORMAT.parse(dateString);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
 }

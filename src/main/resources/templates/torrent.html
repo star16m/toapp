@@ -53,8 +53,8 @@
             </thead>
             <tbody>
                 <tr th:each="torrent : ${torrents}" th:classappend="${torrent.download}? 'active'">
-                    <td class="col-md-3 text-center" th:text="${torrent.dateString}">dateString</td>
-                    <td class="col-md-3" th:with="simpleKeyword=${torrent.keyword}" th:text="${simpleKeyword.replaceAll('[ \d]{2,}', '')}">keyword</td>
+                    <td class="col-md-3 text-center"><a th:text="${#dates.format(torrent.date, 'MM월 dd일 (E)')}" th:href="@{/torrent(targetDate=${torrent.dateString})}">dateString</a></td>
+                    <td class="col-md-3"><a th:with="simpleKeyword=${torrent.keyword}" th:text="${simpleKeyword.replaceAll('[ \d]{2,}', '')}" th:href="@{/torrent(name=${torrent.keyword})}">keyword</a></td>
                     <td class="col-md-3" th:text="${#strings.abbreviate(torrent.title, 30)}">title</td>
                     <td class="col-md-3 text-center" th:with="torrentSize=${torrent.size}" th:text="${torrentSize.replaceAll(' .+', '')}">size</td>
                     <!-- 

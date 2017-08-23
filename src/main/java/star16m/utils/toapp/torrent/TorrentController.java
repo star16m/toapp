@@ -2,6 +2,7 @@ package star16m.utils.toapp.torrent;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,12 +33,20 @@ public class TorrentController {
 	private TorrentCollector collector;
 	
 	@GetMapping
-	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, Model model) {
+	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, @RequestParam(required=false, defaultValue = "-1") Integer targetDate, @RequestParam(name="name", required=false) String torrentName, Model model) {
 		log.debug("try findAll torrent site.");
+		log.info("torrentName ::: " + torrentName);
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
 			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(lastDaysList);
+		} else if (targetDate != null && targetDate > 0) {
+			List<String> targetDateList = new ArrayList<String>();
+			targetDateList.add(String.valueOf(targetDate));
+			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(targetDateList);
+		} else if (torrentName != null && torrentName.length() > 0) {
+			log.info("try torrent name [" + torrentName + "]");
+			torrentList = torrentRepository.findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(torrentName);
 		} else {
 			torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
 		}
