@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.commons.Message;
 import star16m.utils.toapp.commons.MessageRepository;
+import star16m.utils.toapp.keyword.Keyword;
+import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.torrent.ToService;
 import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
@@ -26,6 +28,8 @@ public class ToAppController {
 	private MessageRepository messageRepository;
 	@Autowired
 	private TorrentRepository torrentRepository;
+	@Autowired
+	private KeywordRepository keywordRepository;
 	@RequestMapping("/")
 	public String index(Map<String, Object> model) {
 		List<Torrent> torrents = service.selectAll();
@@ -49,6 +53,9 @@ public class ToAppController {
 		Long torrentLast7DaysCount = torrentRepository.countByDateStringIn(last7DaysList);
 		model.put("torrentLast2DaysCount", torrentLast2DaysCount);
 		model.put("torrentLast7DaysCount", torrentLast7DaysCount);
+		
+		List<Keyword> kList = keywordRepository.selectLatestkeyword();
+		model.put("notDownloadKeyword", kList);
 		return "index";
 	}
 }
