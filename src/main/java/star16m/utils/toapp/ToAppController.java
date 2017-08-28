@@ -10,8 +10,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.commons.Message;
-import star16m.utils.toapp.commons.MessageRepository;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.torrent.ToService;
@@ -25,8 +23,6 @@ public class ToAppController {
 	@Autowired
 	private ToService service;
 	@Autowired
-	private MessageRepository messageRepository;
-	@Autowired
 	private TorrentRepository torrentRepository;
 	@Autowired
 	private KeywordRepository keywordRepository;
@@ -34,15 +30,7 @@ public class ToAppController {
 	public String index(Map<String, Object> model) {
 		List<Torrent> torrents = service.selectAll();
 		log.debug("current torrents is " + torrents.size() + ".");
-		Message m = new Message();
-		m.setType("info");
-		m.setMessage("current torrents is " + torrents.size() + ".");
-		m.setCreateDate(new Date());
-		messageRepository.save(m);
-		long count = messageRepository.count();
-		log.info("Message = {}", count);
 		model.put("torrents", torrents);
-		model.put("messages", messageRepository.findTop10ByOrderByCreateDateDesc());
 		// last 2 day
 		DateTime dateTime = new DateTime(new Date());
 		model.put("torrentLast2days", dateTime.minusDays(1).toString("yyyyMMdd"));

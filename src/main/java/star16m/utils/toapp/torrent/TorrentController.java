@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
+import star16m.utils.toapp.site.Site;
+import star16m.utils.toapp.site.SiteRepository;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 @Controller
@@ -30,12 +32,19 @@ public class TorrentController {
 	@Autowired
 	private KeywordRepository keywordRepository;
 	@Autowired
+	private SiteRepository siteRepository;
+	@Autowired
 	private TorrentCollector collector;
 	
 	@GetMapping
 	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, @RequestParam(required=false, defaultValue = "-1") Integer targetDate, @RequestParam(name="name", required=false) String torrentName, Model model) {
 		log.debug("try findAll torrent site.");
 		log.info("torrentName ::: " + torrentName);
+		
+		Site site = siteRepository.findOne(2L);
+		site.setTorrentMagnetHashReplace("btih:(.+?)\"");
+		siteRepository.save(site);
+		collector.collect();
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);

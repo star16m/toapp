@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import star16m.utils.toapp.commons.CommonService;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
@@ -39,25 +40,29 @@ public class TorrentCollector {
 	private KeywordRepository keywordRepository;
 	@Autowired
 	private TorrentRepository torrentRepository;
+	@Autowired
+	private CommonService commonService;
+	
 	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
 		List<Site> siteList = siteRepository.findAll();
 		List<Keyword> keywordList = keywordRepository.findAll();
+		
 		boolean collected = false;
-		for (Site site : siteList) {
+//		for (Site site : siteList) {
 			for (Keyword keyword : keywordList) {
 				try {
-					collect(site, keyword);
+					collect(siteList.get(1), keyword);
 					collected = true;
 				} catch (IOException e) {
-					log.warn("error occured while collect torrent site[{}]", site);
+					log.warn("error occured while collect torrent site[{}]", siteList.get(1));
 					// do other site.
 				}
 			}
 			if (collected) {
-				break;
+//				break;
 			}
-		}
+//		}
 			
 	}
 	
@@ -70,7 +75,6 @@ public class TorrentCollector {
 	/**
 	 * 매일
 	 */
-//	@Scheduled(cron="*/10 * * * * *")
 	@Scheduled(cron="0 5 12 * * *")
 	public void resetTarget() {
 		int days = resetTargetDateString();
@@ -87,9 +91,6 @@ public class TorrentCollector {
 		return days;
 	}
 	public void collect(String keywordString) {
-		if (targetDateString.size() <= 0) {
-			resetTargetDateString();
-		}
 		log.info("try to collect by keyword [{}]", keywordString);
 		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
 		log.info("found keyword [{}]", keyword);
@@ -118,6 +119,10 @@ public class TorrentCollector {
 		}
 	}
 	public void collect(Site site, Keyword keyword) throws IOException {
+		if (targetDateString.size() <= 0) {
+			resetTargetDateString();
+		}
+		commonService.saveMessage("collect", "start site[" + site + "], keyword[" + keyword + "]");
 		Document doc = null;
 		try {
 			String url = site.getSearchUrl();
@@ -128,7 +133,9 @@ public class TorrentCollector {
 					log.info("url is [{}]", url);
 				}
 			}
+			commonService.saveMessage("collect", "try connect url [" + url + "]");
 			doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
+			commonService.saveMessage("collect", "success full connected url[" + url + "]");
 			if (doc != null) {
 				Elements elements = doc.select(site.getSelector());
 				if (elements == null || elements.size() == 0) {
@@ -141,10 +148,13 @@ public class TorrentCollector {
 					}
 				}
 				log.info("try to connect torrent detail page [{}]", elements.size());
+				commonService.saveMessage("collect", "selected [" + elements.size() + "] elements.");
 				for (Element element : elements) {
 					String detailUrl = element.attr("abs:href");
+					commonService.saveMessage("collect", "find detail url [" + detailUrl + "]");
 					if (torrentRepository.existsByUrl(detailUrl)) {
 						log.info("already exists torrent. url[{}]", detailUrl);
+						commonService.saveMessage("collect", "already exists torrent. url[" + detailUrl + "]");
 						continue;
 					}
 					Document itemDoc = Jsoup.connect(detailUrl).userAgent(USER_AGENT).get();
@@ -169,8 +179,10 @@ public class TorrentCollector {
 					} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
 						dateString = "20" + dateString;
 					}
+					commonService.saveMessage("collect", "selected date is [" + dateString + "]");
 					if (!targetDateString.contains(dateString)) {
 						log.warn("{} is not target date[{}]!.", torrentName, dateString);
+						commonService.saveMessage("collect", "date [" + dateString + "] is not in!");
 						continue;
 					}
 					t.setDateString(dateString);
@@ -179,11 +191,14 @@ public class TorrentCollector {
 					t.setSiteName(site.getName());
 					t.setKeyword(keyword.getKeyword());
 					t.setTorrentFindDate(new Date());
+					commonService.saveMessage("collect", "founded torrent [" + t + "]");
 					if (torrentRepository.exists(t.getMagnetCode())) {
+						commonService.saveMessage("collect", "already exists torrent [" + t + "]");
 						log.info("already exists torrent[{}]", t);
 					} else {
 						torrentRepository.saveAndFlush(t);
 					}
+					commonService.saveMessage("collect", "success fully found torrent [" + t + "]");
 				}
 			}
 		} catch (IOException e) {
