@@ -42,7 +42,8 @@ public class TorrentController {
 		log.info("torrentName ::: " + torrentName);
 		
 		Site site = siteRepository.findOne(2L);
-		site.setTorrentMagnetHashReplace("btih:(.+?)\"");
+		site.setTorrentMagnetHashReplace("Info Hash: ([a-zA-Z0-9]+)");
+		site.setTorrentMagnetHashReplace("파일크기:([ 0-9\\.]+ [A-Z])");
 		siteRepository.save(site);
 		collector.collect();
 		List<Torrent> torrentList = null;

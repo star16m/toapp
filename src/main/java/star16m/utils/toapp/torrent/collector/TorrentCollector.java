@@ -122,7 +122,7 @@ public class TorrentCollector {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
-		commonService.saveMessage("collect", "start site[" + site + "], keyword[" + keyword + "]");
+		commonService.saveMessage("collect", "start site[" + site.getName() + "], keyword[" + keyword.getKeyword() + "]");
 		Document doc = null;
 		try {
 			String url = site.getSearchUrl();
@@ -191,14 +191,14 @@ public class TorrentCollector {
 					t.setSiteName(site.getName());
 					t.setKeyword(keyword.getKeyword());
 					t.setTorrentFindDate(new Date());
-					commonService.saveMessage("collect", "founded torrent [" + t + "]");
+					commonService.saveMessage("collect", "founded torrent");
 					if (torrentRepository.exists(t.getMagnetCode())) {
-						commonService.saveMessage("collect", "already exists torrent [" + t + "]");
+						commonService.saveMessage("collect", "already exists torrent");
 						log.info("already exists torrent[{}]", t);
 					} else {
 						torrentRepository.saveAndFlush(t);
 					}
-					commonService.saveMessage("collect", "success fully found torrent [" + t + "]");
+					commonService.saveMessage("collect", "success fully found torrent");
 				}
 			}
 		} catch (IOException e) {
