@@ -3,6 +3,7 @@ package star16m.utils.toapp.torrent;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -41,12 +42,13 @@ public class TorrentController {
 		log.debug("try findAll torrent site.");
 		log.info("torrentName ::: " + torrentName);
 		
-//		Site site = siteRepository.findOne(2L);
-//		site.setTorrentNameReplace("토렌트명: (.+?)(시드|Info Hash)");
-//		site.setTorrentMagnetHashReplace("Info Hash: ([a-zA-Z0-9]+?)");
-//		site.setTorrentMagnetHashReplace("파일크기:([ 0-9\\.]+ [A-Z])");
-//		siteRepository.save(site);
-//		collector.collect();
+		torrentRepository.deleteByDateStringNotIn(Arrays.asList("20170823", "20170822", "20170821", "20170820", "20170819", "20170818", "20170817", "20170816", "20170815", "20170814", "20170813"));
+		Site site = siteRepository.findOne(2L);
+		site.setTorrentNameReplace("토렌트명: (.+?)(시드|Info Hash)");
+		site.setTorrentMagnetHashReplace("Info Hash: ([a-zA-Z0-9]+?)");
+		site.setTorrentSizeReplace("파일크기:([ 0-9\\.]+ [A-Z])");
+		siteRepository.save(site);
+		collector.collect();
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
