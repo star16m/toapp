@@ -32,6 +32,7 @@
 	                                <th>sizeRe</th>
 	                                <th>magnet</th>
 	                                <th>magnetRe</th>
+	                                <th>사용</th>
 	                            </tr>
 	                        </thead>
 	                        <tbody>
@@ -46,6 +47,7 @@
 	                                <td th:text="${site.torrentSizeReplace}">torrentSizeReplace</td>
 	                                <td th:text="${site.torrentMagnetHashSelector}">torrentMagnetSelector</td>
 	                                <td th:text="${site.torrentMagnetHashReplace}">torrentMagnetReplace</td>
+	                                <td><input type="checkbox" name="active" th:checked="${site.useable}" /></td>
 	                            </tr>
 	                        </tbody>
 	                    </table>

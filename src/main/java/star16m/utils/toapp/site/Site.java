@@ -1,5 +1,6 @@
 package star16m.utils.toapp.site;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -41,6 +42,7 @@ public class Site {
 		private String torrentSizeReplace;
 		private String torrentMagnetHashSelector;
 		private String torrentMagnetHashReplace;
+		private boolean useable = true;
 	}
 	@Id @GeneratedValue
 	private Long id;
@@ -63,5 +65,7 @@ public class Site {
 	@NotNull
 	private String torrentMagnetHashSelector;
 	private String torrentMagnetHashReplace;
-	
+
+	@Column(columnDefinition="tinyint(1) default 1")
+	private boolean useable = true;
 }

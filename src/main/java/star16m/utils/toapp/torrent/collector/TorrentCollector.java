@@ -45,24 +45,24 @@ public class TorrentCollector {
 	
 	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
-		List<Site> siteList = siteRepository.findAll();
+		List<Site> siteList = siteRepository.findByUseableTrue();
 		List<Keyword> keywordList = keywordRepository.findAll();
 		
 		boolean collected = false;
-//		for (Site site : siteList) {
+		for (Site site : siteList) {
 			for (Keyword keyword : keywordList) {
 				try {
-					collect(siteList.get(1), keyword);
+					collect(site, keyword);
 					collected = true;
 				} catch (IOException e) {
-					log.warn("error occured while collect torrent site[{}]", siteList.get(1));
+					log.warn("error occured while collect torrent site[{}]", site);
 					// do other site.
 				}
 			}
 			if (collected) {
-//				break;
+				break;
 			}
-//		}
+		}
 			
 	}
 	
@@ -157,48 +157,53 @@ public class TorrentCollector {
 						commonService.saveMessage("collect", "already exists torrent. url[" + detailUrl + "]");
 						continue;
 					}
-					Document itemDoc = Jsoup.connect(detailUrl).userAgent(USER_AGENT).get();
-					Torrent t = new Torrent();
-					t.setUrl(detailUrl);
-					String torrentName = null;
-					String torrentSize = null;
-					String torrentMagnetHash = null;
-					if (!StringUtils.isEmpty(site.getTorrentNameSelector())) {
-						torrentName = replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
+					Document itemDoc = null;
+					try {
+						itemDoc = Jsoup.connect(detailUrl).userAgent(USER_AGENT).get();
+						Torrent t = new Torrent();
+						t.setUrl(detailUrl);
+						String torrentName = null;
+						String torrentSize = null;
+						String torrentMagnetHash = null;
+						if (!StringUtils.isEmpty(site.getTorrentNameSelector())) {
+							torrentName = replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
+						}
+						if (!StringUtils.isEmpty(site.getTorrentSizeSelector())) {
+							torrentSize = replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
+						}
+						if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
+							torrentMagnetHash = replaceGroup(itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
+						}
+						t.setTitle(torrentName);
+						String dateString = replaceGroup(torrentName, "(\\d{6,8})");
+						if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
+							dateString = "--------";
+						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
+							dateString = "20" + dateString;
+						}
+						commonService.saveMessage("collect", "selected date is [" + dateString + "]");
+						if (!targetDateString.contains(dateString)) {
+							log.warn("{} is not target date[{}]!.", torrentName, dateString);
+							commonService.saveMessage("collect", "date [" + dateString + "] is not in!");
+							continue;
+						}
+						t.setDateString(dateString);
+						t.setSize(torrentSize);
+						t.setMagnetCode(torrentMagnetHash);
+						t.setSiteName(site.getName());
+						t.setKeyword(keyword.getKeyword());
+						t.setTorrentFindDate(new Date());
+						commonService.saveMessage("collect", "founded torrent");
+						if (torrentRepository.exists(t.getMagnetCode())) {
+							commonService.saveMessage("collect", "already exists torrent");
+							log.info("already exists torrent[{}]", t);
+						} else {
+							torrentRepository.saveAndFlush(t);
+						}
+						commonService.saveMessage("collect", "success fully found torrent");
+					} catch (IOException e) {
+						commonService.saveMessage("collect", "error occured while torrent.");
 					}
-					if (!StringUtils.isEmpty(site.getTorrentSizeSelector())) {
-						torrentSize = replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
-					}
-					if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
-						torrentMagnetHash = replaceGroup(itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
-					}
-					t.setTitle(torrentName);
-					String dateString = replaceGroup(torrentName, "(\\d{6,8})");
-					if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
-						dateString = "--------";
-					} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
-						dateString = "20" + dateString;
-					}
-					commonService.saveMessage("collect", "selected date is [" + dateString + "]");
-					if (!targetDateString.contains(dateString)) {
-						log.warn("{} is not target date[{}]!.", torrentName, dateString);
-						commonService.saveMessage("collect", "date [" + dateString + "] is not in!");
-						continue;
-					}
-					t.setDateString(dateString);
-					t.setSize(torrentSize);
-					t.setMagnetCode(torrentMagnetHash);
-					t.setSiteName(site.getName());
-					t.setKeyword(keyword.getKeyword());
-					t.setTorrentFindDate(new Date());
-					commonService.saveMessage("collect", "founded torrent");
-					if (torrentRepository.exists(t.getMagnetCode())) {
-						commonService.saveMessage("collect", "already exists torrent");
-						log.info("already exists torrent[{}]", t);
-					} else {
-						torrentRepository.saveAndFlush(t);
-					}
-					commonService.saveMessage("collect", "success fully found torrent");
 				}
 			}
 		} catch (IOException e) {
