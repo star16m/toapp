@@ -3,7 +3,6 @@ package star16m.utils.toapp.torrent;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -17,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import lombok.extern.slf4j.Slf4j;
+import star16m.utils.toapp.commons.MessageRepository;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
-import star16m.utils.toapp.site.Site;
 import star16m.utils.toapp.site.SiteRepository;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
@@ -36,6 +35,8 @@ public class TorrentController {
 	private SiteRepository siteRepository;
 	@Autowired
 	private TorrentCollector collector;
+	@Autowired
+	private MessageRepository messageRepository;
 	
 	@GetMapping
 	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, @RequestParam(required=false, defaultValue = "-1") Integer targetDate, @RequestParam(name="name", required=false) String torrentName, Model model) {
@@ -54,6 +55,7 @@ public class TorrentController {
 //		siteRepository.save(site);
 //		
 		//collector.collect();
+		//messageRepository.deleteAllInBatch();
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);

@@ -52,7 +52,8 @@ public class TorrentCollector {
 		for (Site site : siteList) {
 			for (Keyword keyword : keywordList) {
 				try {
-					collect(site, keyword);
+					String result = collect(site, keyword);
+					commonService.saveMessage("cron-30", result);
 					collected = true;
 				} catch (IOException e) {
 					log.warn("error occured while collect torrent site[{}]", site);
@@ -103,7 +104,8 @@ public class TorrentCollector {
 						boolean collected = false;
 						for (Site site : siteList) {
 							try {
-								collect(site, keyword);
+								String result = collect(site, keyword);
+								commonService.saveMessage("col-key", result);
 								collected = true;
 							} catch (IOException e) {
 								log.warn("error occured while collect torrent site[{}]", site);
@@ -118,12 +120,15 @@ public class TorrentCollector {
 			}
 		}
 	}
-	public void collect(Site site, Keyword keyword) throws IOException {
+	public String collect(Site site, Keyword keyword) throws IOException {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
-		commonService.saveMessage("collect", "start site[" + site.getName() + "], keyword[" + keyword.getKeyword() + "]");
 		Document doc = null;
+		int notInTargetDate = 0;
+		int alreadyExists   = 0;
+		int success         = 0;
+		int totalElementNum = 0;
 		try {
 			String url = site.getSearchUrl();
 			if (site.getSearchUrl().contains("[KEYWORD]")) {
@@ -133,28 +138,25 @@ public class TorrentCollector {
 					log.info("url is [{}]", url);
 				}
 			}
-			commonService.saveMessage("collect", "try connect url [" + url + "]");
 			doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
-			commonService.saveMessage("collect", "success full connected url[" + url + "]");
 			if (doc != null) {
 				Elements elements = doc.select(site.getSelector());
 				if (elements == null || elements.size() == 0) {
-					return;
+					return "[" + keyword.getKeyword() + "] [element not found]";
 				}
 				for (Element e : elements) {
 					if (!e.tagName().equalsIgnoreCase("a")) {
 						log.info("there is not a tag. [{}]", e.tagName());
-						return;
+						return "[" + keyword.getKeyword() + "] [a tag not found]";
 					}
 				}
 				log.info("try to connect torrent detail page [{}]", elements.size());
-				commonService.saveMessage("collect", "selected [" + elements.size() + "] elements.");
+				totalElementNum = elements.size();
 				for (Element element : elements) {
+					
 					String detailUrl = element.attr("abs:href");
-					commonService.saveMessage("collect", "find detail url [" + detailUrl + "]");
 					if (torrentRepository.existsByUrl(detailUrl)) {
 						log.info("already exists torrent. url[{}]", detailUrl);
-						commonService.saveMessage("collect", "already exists torrent. url[" + detailUrl + "]");
 						continue;
 					}
 					Document itemDoc = null;
@@ -181,10 +183,9 @@ public class TorrentCollector {
 						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
 							dateString = "20" + dateString;
 						}
-						commonService.saveMessage("collect", "selected date is [" + dateString + "]");
 						if (!targetDateString.contains(dateString)) {
 							log.warn("{} is not target date[{}]!.", torrentName, dateString);
-							commonService.saveMessage("collect", "date [" + dateString + "] is not in!");
+							totalElementNum++;
 							continue;
 						}
 						t.setDateString(dateString);
@@ -193,16 +194,14 @@ public class TorrentCollector {
 						t.setSiteName(site.getName());
 						t.setKeyword(keyword.getKeyword());
 						t.setTorrentFindDate(new Date());
-						commonService.saveMessage("collect", "founded torrent");
 						if (torrentRepository.exists(t.getMagnetCode())) {
-							commonService.saveMessage("collect", "already exists torrent");
 							log.info("already exists torrent[{}]", t);
+							alreadyExists++;
 						} else {
 							torrentRepository.saveAndFlush(t);
+							success++;
 						}
-						commonService.saveMessage("collect", "success fully found torrent");
 					} catch (IOException e) {
-						commonService.saveMessage("collect", "error occured while torrent.");
 					}
 				}
 			}
@@ -210,7 +209,7 @@ public class TorrentCollector {
 			log.error("error occured while collect. site=[{}], keyword=[{}], error=[{}]", site, keyword, e);
 			throw e;
 		}
-		return;
+		return "Total[" + totalElementNum + "], notInDate[" + notInTargetDate + ", already[" + alreadyExists + "], success[" + success + "]";
 	}
 	private String replaceGroup(String orgString, String patternString) {
 		String replaceString = new String(orgString);
