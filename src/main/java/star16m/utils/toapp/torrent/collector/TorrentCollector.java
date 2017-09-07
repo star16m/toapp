@@ -129,6 +129,7 @@ public class TorrentCollector {
 		int alreadyExists   = 0;
 		int success         = 0;
 		int totalElementNum = 0;
+		int alreadyExistUrl = 0;
 		try {
 			String url = site.getSearchUrl();
 			if (site.getSearchUrl().contains("[KEYWORD]")) {
@@ -157,6 +158,7 @@ public class TorrentCollector {
 					String detailUrl = element.attr("abs:href");
 					if (torrentRepository.existsByUrl(detailUrl)) {
 						log.info("already exists torrent. url[{}]", detailUrl);
+						alreadyExistUrl++;
 						continue;
 					}
 					Document itemDoc = null;
@@ -209,7 +211,7 @@ public class TorrentCollector {
 			log.error("error occured while collect. site=[{}], keyword=[{}], error=[{}]", site, keyword, e);
 			throw e;
 		}
-		return "Total[" + totalElementNum + "], notInDate[" + notInTargetDate + ", already[" + alreadyExists + "], success[" + success + "]";
+		return "Total[" + totalElementNum + "], alreadyExistUrl[" + alreadyExistUrl + ", notInDate[" + notInTargetDate + "], already[" + alreadyExists + "], success[" + success + "]";
 	}
 	private String replaceGroup(String orgString, String patternString) {
 		String replaceString = new String(orgString);

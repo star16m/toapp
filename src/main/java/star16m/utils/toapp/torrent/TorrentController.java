@@ -55,7 +55,7 @@ public class TorrentController {
 //		siteRepository.save(site);
 //		
 		//collector.collect();
-		//messageRepository.deleteAllInBatch();
+		messageRepository.deleteAllInBatch();
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
