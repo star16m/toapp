@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.commons.MessageRepository;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
-import star16m.utils.toapp.site.SiteRepository;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 @Controller
@@ -32,30 +30,13 @@ public class TorrentController {
 	@Autowired
 	private KeywordRepository keywordRepository;
 	@Autowired
-	private SiteRepository siteRepository;
-	@Autowired
 	private TorrentCollector collector;
-	@Autowired
-	private MessageRepository messageRepository;
 	
 	@GetMapping
 	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, @RequestParam(required=false, defaultValue = "-1") Integer targetDate, @RequestParam(name="name", required=false) String torrentName, Model model) {
 		log.debug("try findAll torrent site.");
 		log.info("torrentName ::: " + torrentName);
 		
-		//torrentRepository.deleteByDateStringNotIn(Arrays.asList("20170823", "20170822", "20170821", "20170820", "20170819", "20170818", "20170817", "20170816", "20170815", "20170814", "20170813"));
-		//Site site = siteRepository.findOne(2L);
-//		site.setTorrentNameReplace("토렌트명: (.+?)(시드|Info Hash)");
-		//site.setTorrentMagnetHashReplace("btih:([a-zA-Z0-9]+)");
-//		site.setTorrentSizeReplace("파일크기:([ 0-9\\.]+ [A-Z])");
-//		site.setUseable(true);
-		//siteRepository.save(site);
-//		site = siteRepository.findOne(1L);
-//		site.setUseable(false);
-//		siteRepository.save(site);
-//		
-		//collector.collect();
-		messageRepository.deleteAllInBatch();
 		List<Torrent> torrentList = null;
 		if (lastDays != null && lastDays > 0) {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);

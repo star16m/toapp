@@ -21,6 +21,7 @@ import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.commons.CommonService;
+import star16m.utils.toapp.commons.MessageRepository;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
@@ -42,6 +43,8 @@ public class TorrentCollector {
 	private TorrentRepository torrentRepository;
 	@Autowired
 	private CommonService commonService;
+	@Autowired
+	private MessageRepository messageRepository;
 	
 	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
@@ -81,6 +84,7 @@ public class TorrentCollector {
 		int days = resetTargetDateString();
 		log.info("delete torrent files that older than {} days.", days);
 		torrentRepository.deleteByDateStringNotIn(targetDateString);
+		messageRepository.deleteByCreateDateLessThan(new DateTime(new Date()).minusDays(1).toDate());
 	}
 	private static int resetTargetDateString() {
 		targetDateString.clear();

@@ -65,7 +65,7 @@
 			</div>
 		</div>
 		<div class="col-lg-2 col-md-6" th:each="ndKeyword : ${notDownloadKeyword}">
-			<div class="panel panel-success">
+			<div class="panel panel-warning">
 				<div class="panel-heading">
 					<div class="row">
 						<div class="col-xs-3">
@@ -79,7 +79,7 @@
 				</div>
 				<div class="panel-footer">
 					<a href="#" th:href="@{'/torrent/' + ${ndKeyword.keyword}}">
-						<span class="pull-left">View Details</span>
+						<span class="pull-left">리스트 보기</span>
 						<span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
 					</a>
 					<div class="clearfix"></div>
