@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -38,6 +37,7 @@ public class Keyword {
 	@Size(min=2, max=255)
 	@Column(unique=true)
 	private String keyword;
+	
 	@Column(nullable=false, columnDefinition="tinyint(1) default 0")
 	private boolean ignoreDate = false;
 }
