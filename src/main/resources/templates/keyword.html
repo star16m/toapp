@@ -24,6 +24,7 @@
 	                <tr	>
 	                    <th>#</th>
 	                    <th>키워드</th>
+	                    <th>일자</th>
 	                    <th>삭제</th>
 	                </tr>
 	            </thead>
@@ -31,6 +32,7 @@
 	                <tr th:each="keyword : ${keywords}">
 	                    <td class="text-center" th:text="${keyword.id}">id</td>
 	                    <td th:text="${keyword.keyword}">keyword</td>
+	                    <td th:text="${keyword.ignoreDate} ? '일자무시' : '최대2주 데이터만'">ignoreDate</td>
 	                    <td class="text-center">
 				        	<form action="#" th:action="@{'/keyword/{id}'(id=${keyword.id})}" th:method="delete" >
 				        		<button type="submit" class="btn btn-primary btn-xs">Delete</button>

@@ -49,7 +49,7 @@ public class TorrentCollector {
 	@Scheduled(cron="* */30 * * * *")
 	public void collect() {
 		List<Site> siteList = siteRepository.findByUseableTrue();
-		List<Keyword> keywordList = keywordRepository.findAll();
+		List<Keyword> keywordList = keywordRepository.findByIgnoreDateFalse();
 		
 		boolean collected = false;
 		for (Site site : siteList) {
@@ -182,14 +182,14 @@ public class TorrentCollector {
 						if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
 							torrentMagnetHash = replaceGroup(itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
 						}
-						t.setTitle(torrentName);
+						t.setTitle(torrentName.substring(0, Math.min(255, torrentName.length())));
 						String dateString = replaceGroup(torrentName, "(\\d{6,8})");
 						if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
 							dateString = "--------";
 						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
 							dateString = "20" + dateString;
 						}
-						if (!targetDateString.contains(dateString)) {
+						if (!keyword.isIgnoreDate() && !targetDateString.contains(dateString)) {
 							log.warn("{} is not target date[{}]!.", torrentName, dateString);
 							totalElementNum++;
 							continue;

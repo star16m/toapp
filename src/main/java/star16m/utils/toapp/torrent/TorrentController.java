@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -35,7 +36,6 @@ public class TorrentController {
 	@GetMapping
 	public String torrent(@RequestParam(required=false, defaultValue="-1") Integer lastDays, @RequestParam(required=false, defaultValue = "-1") Integer targetDate, @RequestParam(name="name", required=false) String torrentName, Model model) {
 		log.debug("try findAll torrent site.");
-		log.info("torrentName ::: " + torrentName);
 		
 		List<Torrent> torrentList = null;
 		model.addAttribute("currentKeyword", "");
@@ -61,7 +61,29 @@ public class TorrentController {
 		
 		return "torrent";
 	}
-
+	@PostMapping("search")
+	public String search(@RequestParam(name="keyword", required=false) String keyword, Model model) {
+		log.debug("keyword = [{}]", keyword);
+		if (keyword != null && keyword.length() > 0) {
+			Keyword key = keywordRepository.findByKeyword(keyword);
+			if (key != null && key.getKeyword() != null && key.getKeyword().length() > 0) {
+				// already exists keyword
+			} else {
+				key = new Keyword();
+				key.setKeyword(keyword);
+				key.setIgnoreDate(true);
+				keywordRepository.save(key);
+				collector.collect(keyword);
+			}
+		}
+		String encodedString = "";
+		try {
+			encodedString = URLEncoder.encode(keyword, "UTF-8").replaceAll("\\+", "%20");
+		} catch (UnsupportedEncodingException e) {
+			log.warn(e.getMessage());
+		}
+		return "redirect:/torrent/?name=" + encodedString;
+	}
 	@PatchMapping("download/{magnetHash}")
 	public String createTorrent(@PathVariable String magnetHash, @RequestParam String currentKeyword, Model model) {
 		log.info("Current keyword = {}", currentKeyword);
@@ -78,7 +100,7 @@ public class TorrentController {
 		} catch (UnsupportedEncodingException e) {
 			log.warn(e.getMessage());
 		}
-		return "redirect:/torrent/" + encodedString;
+		return "redirect:/torrent/";
 	}
 	@PatchMapping("collect")
 	public String collectTorrent(@RequestParam String currentKeyword, Model model) {
@@ -90,6 +112,6 @@ public class TorrentController {
 		} catch (UnsupportedEncodingException e) {
 			log.warn(e.getMessage());
 		}
-		return "redirect:/torrent/" + encodedString;
+		return "redirect:/torrent/?name=" + encodedString;
 	}
 }

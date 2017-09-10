@@ -16,7 +16,7 @@
 		<div class="btn-group pull-right">
 			
 			<a class="btn btn-info" href="#" onclick="document.runForm.submit();" th:if="${#strings.length(currentKeyword) > 0}">실행</a>
-			<a class="btn btn-primary" th:href="@{'/torrent/'+${currentKeyword}}" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">전체보기</a>
+			<a class="btn btn-primary" th:href="@{/torrent(name=${currentKeyword})}" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">전체보기</a>
 			<a class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span class="caret"></span>
 			</a>
@@ -58,7 +58,7 @@
             </thead>
             <tbody>
                 <tr th:each="torrent : ${torrents}" th:classappend="${torrent.download}? 'active'">
-                    <td class="col-md-3 text-center"><a th:text="${#dates.format(torrent.date, 'MM월 dd일 (E)')}" th:href="@{/torrent(targetDate=${torrent.dateString})}">dateString</a></td>
+                    <td class="col-md-3 text-center"><a th:text="${torrent.date} ? ${#dates.format(torrent.date, 'MM월 dd일 (E)')}" th:href="@{/torrent(targetDate=${torrent.dateString})}">dateString</a></td>
                     <td class="col-md-3"><a th:with="simpleKeyword=${torrent.keyword}" th:text="${simpleKeyword.replaceAll('[ \d]{2,}', '')}" th:href="@{/torrent(name=${torrent.keyword})}">keyword</a></td>
                     <td class="col-md-3" th:text="${#strings.abbreviate(torrent.title, 30)}">title</td>
                     <td class="col-md-3 text-center" th:with="torrentSize=${torrent.size}" th:text="${torrentSize.replaceAll(' ?\(.+\)', '')}">size</td>
