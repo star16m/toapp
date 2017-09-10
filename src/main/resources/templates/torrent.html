@@ -15,7 +15,7 @@
    		<h1 class="inline-h1">Torrent</h1>
 		<div class="btn-group pull-right">
 			
-			<a class="btn btn-info" href="#" onclick="document.runForm.submit();">실행</a>
+			<a class="btn btn-info" href="#" onclick="document.runForm.submit();" th:if="${#strings.length(currentKeyword) > 0}">실행</a>
 			<a class="btn btn-primary" th:href="@{'/torrent/'+${currentKeyword}}" th:text="${#strings.defaultString(currentKeyword, '전체보기')}">전체보기</a>
 			<a class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<span class="caret"></span>
@@ -26,7 +26,7 @@
 				<li ><a th:href="@{'/torrent?lastDays=2'}" >최근2일</a></li>
 				<li ><a th:href="@{'/torrent?lastDays=7'}" >최근7일</a></li>
 				<li role="separator" class="divider"></li>
-			    <li th:each="keyword : ${keywords}"><a th:href="@{'/torrent/' + ${keyword.keyword}}" th:text="${keyword.keyword}">Torrent</a></li>
+			    <li th:each="keyword : ${keywords}"><a th:href="@{/torrent(name=${keyword.keyword})}" th:text="${keyword.keyword}">Torrent</a></li>
 	  		</ul>
 		</div>
   	</div>
