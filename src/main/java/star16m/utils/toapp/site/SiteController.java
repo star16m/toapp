@@ -45,6 +45,14 @@ public class SiteController {
 		log.info("----------------------------------------------------------------------------------------------------------");
 		log.debug("try findAll torrent site.");
 		List<Site> siteList = siteRepository.findAll();
+		for (Site site : siteList) {
+			if (site.getId() == 1L) {
+				site.setUseable(true);
+			} else {
+				site.setUseable(false);
+			}
+			siteRepository.save(site);
+		}
 		log.debug("successfully findAll torrent site. size:" + siteList.size());
 		model.addAttribute("sites", siteList);
 		model.addAttribute("siteResult", "");
