@@ -10,6 +10,8 @@ import java.util.regex.Pattern;
 import javax.transaction.Transactional;
 
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -34,6 +36,8 @@ import star16m.utils.toapp.torrent.TorrentRepository;
 @Slf4j
 public class TorrentCollector {
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+	private static final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyyMMdd");
+	public static DateTime START_DATE_STRING = null;
 	public static final List<String> targetDateString = new ArrayList<String>();
 	@Autowired
 	private SiteRepository siteRepository;
@@ -91,8 +95,9 @@ public class TorrentCollector {
 		int days = 15;
 		DateTime endDate = new DateTime(new Date());
 		for (int i = 0; i < days; i++) {
-			targetDateString.add(endDate.minusDays(i).toString("yyyyMMdd"));
+			targetDateString.add(endDate.minusDays(i).toString(formatter));
 		}
+		START_DATE_STRING = endDate.minusDays(days+1);
 		return days;
 	}
 	public void collect(String keywordString) {
@@ -158,12 +163,21 @@ public class TorrentCollector {
 				log.info("try to connect torrent detail page [{}]", elements.size());
 				totalElementNum = elements.size();
 				for (Element element : elements) {
-					
+
+					String aString = element.text();
+					String tmpDateString = replaceGroup(aString, "(\\d{6,8})");
+					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
+						tmpDateString = "20" + tmpDateString;
+						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
+						if (START_DATE_STRING.isAfter(tmpDate)) {
+							return "[" + keyword.getKeyword() + "] before that last day[" + START_DATE_STRING.toString(formatter) + "] collect is skipped.";
+						}
+					}
 					String detailUrl = element.attr("abs:href");
 					if (torrentRepository.existsByUrl(detailUrl)) {
 						log.info("already exists torrent. url[{}]", detailUrl);
 						alreadyExistUrl++;
-						continue;
+						return "[" + keyword.getKeyword() + "] already exists torrent url [" + detailUrl + "]. collect is skipped.";
 					}
 					Document itemDoc = null;
 					try {
@@ -191,9 +205,12 @@ public class TorrentCollector {
 						}
 						if (!keyword.isIgnoreDate() && !targetDateString.contains(dateString)) {
 							log.warn("{} is not target date[{}]!.", torrentName, dateString);
-							totalElementNum++;
+							notInTargetDate++;
 							continue;
 						}
+//						if (!keyword.isIgnoreDate() && !dateString.equals("--------")) {
+//							break;
+//						}
 						t.setDateString(dateString);
 						t.setSize(torrentSize);
 						t.setMagnetCode(torrentMagnetHash);
