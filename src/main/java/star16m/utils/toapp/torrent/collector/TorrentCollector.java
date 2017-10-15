@@ -102,23 +102,18 @@ public class TorrentCollector {
 		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
 		log.info("found keyword [{}]", keyword);
 		if (keyword != null) {
-			final List<Site> siteList = siteRepository.findAll();
+			final List<Site> siteList = siteRepository.findByUseableTrue();
 			if (siteList != null && siteList.size() > 0) {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						boolean collected = false;
 						for (Site site : siteList) {
 							try {
 								String result = collect(site, keyword);
 								commonService.saveMessage("col-key", result);
-								collected = true;
 							} catch (IOException e) {
 								log.warn("error occured while collect torrent site[{}]", site);
 								// do other site.
-							}
-							if (collected) {
-								break;
 							}
 						}
 					}
