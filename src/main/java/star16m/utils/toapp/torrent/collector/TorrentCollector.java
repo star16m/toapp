@@ -50,25 +50,22 @@ public class TorrentCollector {
 	@Autowired
 	private MessageRepository messageRepository;
 	
-	@Scheduled(cron="* */30 * * * *")
+	@Scheduled(initialDelay = 1*60*1000, fixedDelay = 5*60*1000)
 	public void collect() {
 		List<Site> siteList = siteRepository.findByUseableTrue();
 		List<Keyword> keywordList = keywordRepository.findByIgnoreDateFalse();
 		
-		boolean collected = false;
 		for (Site site : siteList) {
 			for (Keyword keyword : keywordList) {
 				try {
+					log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
 					String result = collect(site, keyword);
+					log.info("##### collected [{}]", result);
 					commonService.saveMessage("cron-30", result);
-					collected = true;
 				} catch (IOException e) {
 					log.warn("error occured while collect torrent site[{}]", site);
 					// do other site.
 				}
-			}
-			if (collected) {
-				break;
 			}
 		}
 			

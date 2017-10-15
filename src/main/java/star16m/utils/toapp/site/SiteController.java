@@ -32,20 +32,12 @@ public class SiteController {
 	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
 	@Autowired
 	private SiteRepository siteRepository;
-	@Autowired
-	private TorrentRepository torrentRepository;
 	
 	@GetMapping
 	public String site(Model model) {
-		log.info("----------------------------------------------------------------------------------------------------------");
-		List<Torrent> torrentList = torrentRepository.findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
-		for(Torrent torrent : torrentList) {
-			log.info(torrent.toString());
-		}
-		log.info("----------------------------------------------------------------------------------------------------------");
-		log.debug("try findAll torrent site.");
+		log.info("try findAll torrent site.");
 		List<Site> siteList = siteRepository.findAll();
-		log.debug("successfully findAll torrent site. size:" + siteList.size());
+		log.info("successfully findAll torrent site. size:" + siteList.size());
 		model.addAttribute("sites", siteList);
 		model.addAttribute("siteResult", "");
 		model.addAttribute("siteDetailResult", "");

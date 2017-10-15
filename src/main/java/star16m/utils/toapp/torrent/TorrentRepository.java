@@ -13,7 +13,6 @@ public interface TorrentRepository extends JpaRepository<Torrent, String>{
 	@Transactional
 	public void deleteByKeyword(String keyword);
 	public List<Torrent> findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(String keyword);
-	@Transactional
 	public boolean existsByUrl(String detailUrl);
 	public List<Torrent> findTorrentByDownload(boolean download);
 	public List<Torrent> findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(List<String> targetDateStringList);
