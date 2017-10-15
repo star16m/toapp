@@ -169,7 +169,7 @@ public class TorrentCollector {
 					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
 						tmpDateString = "20" + tmpDateString;
 						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
-						if (START_DATE_STRING.isAfter(tmpDate)) {
+						if (!keyword.isIgnoreDate() && START_DATE_STRING.isAfter(tmpDate)) {
 							return "[" + keyword.getKeyword() + "] before that last day[" + START_DATE_STRING.toString(formatter) + "] collect is skipped.";
 						}
 					}
