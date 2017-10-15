@@ -60,9 +60,9 @@
                 <tr th:each="torrent : ${torrents}" th:classappend="${torrent.download}? 'active'">
                     <td class="col-md-2 text-center"><a th:text="${torrent.date} ? ${#dates.format(torrent.date, 'MM월 dd일 (E)')}" th:href="@{/torrent(targetDate=${torrent.dateString})}">dateString</a></td>
                     <td class="col-md-2"><a th:with="simpleKeyword=${torrent.keyword}" th:text="${simpleKeyword.replaceAll('[ \d]{2,}', '')}" th:href="@{/torrent(name=${torrent.keyword})}">keyword</a></td>
-                    <td class="col-md-6"><a target="_blank" th:href="${torrent.url}" th:text="${#strings.abbreviate(torrent.title, 40)}">title</a></td>
+                    <td class="col-md-5"><a target="_blank" th:href="${torrent.url}" th:text="${#strings.abbreviate(torrent.title, 50)}">title</a></td>
                     <td class="col-md-2 text-center" th:with="torrentSize=${torrent.size}" th:text="${torrentSize.replaceAll(' ?\(.+\)', '')}">size</td>
-                    <td class="col-md-2 text-center">
+                    <td class="col-md-1 text-center">
 						<form action="#" th:unless="${torrent.download}" th:action="@{'/torrent/download/{hash}'(hash=${torrent.magnetCode})}" th:method="patch" >
 							<input type="hidden" th:value="${currentKeyword}" th:attr="name='currentKeyword'" />
 							<button type="submit" class="btn btn-info btn-xs">Download</button>
