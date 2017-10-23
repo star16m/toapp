@@ -50,25 +50,22 @@ public class TorrentCollector {
 	@Autowired
 	private MessageRepository messageRepository;
 	
-	@Scheduled(cron="* */30 * * * *")
+	@Scheduled(initialDelay = 1*60*1000, fixedDelay = 30*60*1000)
 	public void collect() {
 		List<Site> siteList = siteRepository.findByUseableTrue();
 		List<Keyword> keywordList = keywordRepository.findByIgnoreDateFalse();
 		
-		boolean collected = false;
 		for (Site site : siteList) {
 			for (Keyword keyword : keywordList) {
 				try {
+					log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
 					String result = collect(site, keyword);
+					log.info("##### collected [{}]", result);
 					commonService.saveMessage("cron-30", result);
-					collected = true;
 				} catch (IOException e) {
 					log.warn("error occured while collect torrent site[{}]", site);
 					// do other site.
 				}
-			}
-			if (collected) {
-				break;
 			}
 		}
 			
@@ -105,23 +102,18 @@ public class TorrentCollector {
 		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
 		log.info("found keyword [{}]", keyword);
 		if (keyword != null) {
-			final List<Site> siteList = siteRepository.findAll();
+			final List<Site> siteList = siteRepository.findByUseableTrue();
 			if (siteList != null && siteList.size() > 0) {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						boolean collected = false;
 						for (Site site : siteList) {
 							try {
 								String result = collect(site, keyword);
 								commonService.saveMessage("col-key", result);
-								collected = true;
 							} catch (IOException e) {
 								log.warn("error occured while collect torrent site[{}]", site);
 								// do other site.
-							}
-							if (collected) {
-								break;
 							}
 						}
 					}
@@ -169,7 +161,7 @@ public class TorrentCollector {
 					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
 						tmpDateString = "20" + tmpDateString;
 						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
-						if (START_DATE_STRING.isAfter(tmpDate)) {
+						if (!keyword.isIgnoreDate() && START_DATE_STRING.isAfter(tmpDate)) {
 							return "[" + keyword.getKeyword() + "] before that last day[" + START_DATE_STRING.toString(formatter) + "] collect is skipped.";
 						}
 					}

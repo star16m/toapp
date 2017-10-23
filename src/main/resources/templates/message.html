@@ -38,10 +38,10 @@
             </thead>
             <tbody>
                 <tr th:each="message : ${messages}">
-                	<td class="text-center" th:text="${message.id}"></td>
-                    <td class="col-md-3 text-center" th:text="${#dates.format(message.createDate, 'MM/dd HH:mm')}">createDate</td>
-                    <td class="col-md-3" th:text="${message.type}">type</td>
-                    <td class="col-md-3" th:text="${message.message}">message</td>
+                	<td class="col-md-2 text-center" th:text="${message.id}"></td>
+                    <td class="col-md-2 text-center" th:text="${#dates.format(message.createDate, 'MM/dd HH:mm')}">createDate</td>
+                    <td class="col-md-2" th:text="${message.type}">type</td>
+                    <td class="col-md-6" th:text="${message.message}">message</td>
                 </tr>
             </tbody>
         </table>
