@@ -6,6 +6,31 @@
 <head>
 <!-- #################### TITLE #################### -->
 <title>Site</title>
+<script>
+var currentSite;
+function clickSite(obj) {//id, name, searchUrl, selector, torrentNameSelector, torrentNameReplace, torrentSizeSelector, torrentSizeReplace, torrentMagnetSelector, torrentMagnetReplace
+	currentSite = new Object();
+	currentSite.id=$(obj).data('id');
+	currentSite.name=$(obj).data('name');
+	currentSite.searchUrl=$(obj).data('searchurl');
+	currentSite.selector=$(obj).data('selector');
+	
+	currentSite.torrentNameSelector = $(obj).data('torrentnameselector');
+	currentSite.torrentNameReplace  = $(obj).data('torrentnamereplace');
+	
+	currentSite.torrentSizeSelector = $(obj).data('torrentsizeselector');
+	currentSite.torrentSizeReplace = $(obj).data('torrentsizereplace');
+	
+	currentSite.torrentMagnetHashSelector=$(obj).data('torrentmagnethashselector');
+	currentSite.torrentMagnetHashReplace=$(obj).data('torrentmagnethashreplace');
+	
+	$('#siteName').val(currentSite.name);
+	$('#siteSearchUrl').val(currentSite.searchUrl);
+	$('#siteSelector').val(currentSite.selector);
+	
+	console.log(currentSite);
+}
+</script>
 </head>
 <body>
 
@@ -38,7 +63,10 @@
 	                        <tbody>
 	                            <tr th:each="site : ${sites}">
 	                                <td th:text="${site.id}">id</td>
-	                                <td th:text="${site.name}">name</td>
+	                                <td>
+	                                	<a th:text="${site.name}" th:onclick="|javascript:clickSite(this);|" th:attr="data-id=${site.id},data-name=${site.name},data-searchUrl=${site.searchUrl},data-selector=${site.selector},data-torrentNameSelector=${site.torrentNameSelector},data-torrentNameReplace=${site.torrentNameReplace}, data-torrentSizeSelector=${site.torrentSizeSelector}, data-torrentSizeReplace=${site.torrentSizeReplace}, data-torrentMagnetHashSelector=${site.torrentMagnetHashSelector},data-torrentMagnetHashReplace=${site.torrentMagnetHashReplace}">name
+	                                	</a>
+	                                </td>
 	                                <td th:text="${site.searchUrl}">searchUrl</td>
 	                                <td th:text="${site.selector}">selector</td>
 	                                <td th:text="${site.torrentNameSelector}">torrentNameSelector</td>
@@ -87,37 +115,37 @@
 											<span th:if="${#fields.hasErrors('siteSelector')}" th:errors="*{siteSelector}" class="help-block">error!</span>
 										</div>
 										
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentNameSelector')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentNameSelector')}? 'has-error'">
 											<label class="control-label" for="torrentNameSelector">토렌트-이름-Selector</label>
 											<input class="form-control" id="torrentNameSelector" placeholder="토렌트-이름-Selector" th:field="*{torrentNameSelector}" />
 											<span th:if="${#fields.hasErrors('torrentNameSelector')}" th:errors="*{torrentNameSelector}" class="text-danger">error!</span>
 											<span th:if="${torrentNameResult}" th:text="${torrentNameResult}">torrent name result</span>
 										</div>
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentNameReplace')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentNameReplace')}? 'has-error'">
 											<label class="control-label" for="torrentNameReplace">토렌트-이름-Replace</label>
 											<input class="form-control" id="torrentNameReplace" placeholder="토렌트-이름-Replace" th:field="*{torrentNameReplace}" />
 											<span th:if="${#fields.hasErrors('torrentNameReplace')}" th:errors="*{torrentNameReplace}" class="text-danger">error!</span>
 										</div>
 										
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentSizeSelector')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentSizeSelector')}? 'has-error'">
 											<label class="control-label" for="torrentSizeSelector">토렌트-Size-Selector</label>
 											<input class="form-control" id="torrentSizeSelector" placeholder="토렌트-Size-Selector" th:field="*{torrentSizeSelector}" />
 											<span th:if="${#fields.hasErrors('torrentSizeSelector')}" th:errors="*{torrentSizeSelector}" class="text-danger">error!</span>
 											<span th:if="${torrentSizeResult}" th:text="${torrentSizeResult}">torrent size result</span>
 										</div>
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentSizeReplace')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentSizeReplace')}? 'has-error'">
 											<label class="control-label" for="torrentSizeReplace">토렌트-Size-Replace</label>
 											<input class="form-control" id="torrentSizeReplace" placeholder="토렌트-Size-Replace" th:field="*{torrentSizeReplace}" />
 											<span th:if="${#fields.hasErrors('torrentSizeReplace')}" th:errors="*{torrentSizeReplace}" class="text-danger">error!</span>
 										</div>
 										
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentMagnetHashSelector')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentMagnetHashSelector')}? 'has-error'">
 											<label class="control-label" for="torrentMagnetHashSelector">토렌트-Magnet-Selector</label>
 											<input class="form-control" id="torrentMagnetHashSelector" placeholder="토렌트-MagnetHash-Selector" th:field="*{torrentMagnetHashSelector}" />
 											<span th:if="${#fields.hasErrors('torrentMagnetHashSelector')}" th:errors="*{torrentMagnetHashSelector}" class="text-danger">error!</span>
 											<span th:if="${torrentMagnetHashResult}" th:text="${torrentMagnetHashResult}">torrent magnet hash result</span>
 										</div>
-										<div class="form-group" th:unless="${#strings.isEmpty(siteDetailResult)}" th:classappend="${#fields.hasErrors('torrentMagnetHashReplace')}? 'has-error'">
+										<div class="form-group" th:classappend="${#fields.hasErrors('torrentMagnetHashReplace')}? 'has-error'">
 											<label class="control-label" for="torrentMagnetHashReplace">토렌트-Magnet-Replace</label>
 											<input class="form-control" id="torrentMagnetHashReplace" placeholder="토렌트-Magnet-Replace" th:field="*{torrentMagnetHashReplace}" />
 											<span th:if="${#fields.hasErrors('torrentMagnetHashReplace')}" th:errors="*{torrentMagnetHashReplace}" class="text-danger">error!</span>
@@ -139,7 +167,7 @@
 								</div>
 							</div>
 							</form>
-						</div>
+							</div>
 					</div>
 				</div>
 			</div>

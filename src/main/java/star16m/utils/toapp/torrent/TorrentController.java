@@ -100,7 +100,7 @@ public class TorrentController {
 		} catch (UnsupportedEncodingException e) {
 			log.warn(e.getMessage());
 		}
-		return "redirect:/torrent/";
+		return "redirect:/torrent/?name=" + encodedString;
 	}
 	@PatchMapping("collect")
 	public String collectTorrent(@RequestParam String currentKeyword, Model model) {
