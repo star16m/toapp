@@ -80,16 +80,16 @@ public class TorrentCollector {
 	/**
 	 * 매일
 	 */
-	@Scheduled(cron="0 5 12 * * *")
+	@Scheduled(initialDelay = 1*60*1000, fixedDelay = 360*60*1000)
 	public void resetTarget() {
 		int days = resetTargetDateString();
 		log.info("delete torrent files that older than {} days.", days);
 		torrentRepository.deleteByDateStringNotIn(targetDateString);
-		messageRepository.deleteByCreateDateLessThan(new DateTime(new Date()).minusDays(1).toDate());
+		messageRepository.deleteByCreateDateLessThan(new DateTime(new Date()).minusHours(6).toDate());
 	}
 	private static int resetTargetDateString() {
 		targetDateString.clear();
-		int days = 15;
+		int days = 10;
 		DateTime endDate = new DateTime(new Date());
 		for (int i = 0; i < days; i++) {
 			targetDateString.add(endDate.minusDays(i).toString(formatter));
