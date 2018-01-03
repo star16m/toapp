@@ -12,18 +12,20 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.torrent.Torrent;
-import star16m.utils.toapp.torrent.TorrentRepository;
 
 @Controller
 @RequestMapping("site")
@@ -33,6 +35,13 @@ public class SiteController {
 	@Autowired
 	private SiteRepository siteRepository;
 	
+	@PatchMapping
+	public ResponseEntity<?> editSiteEnable(@RequestParam("siteId") Long siteId, @RequestParam("enabled") Boolean enabled, Model model) {
+		Site site = siteRepository.findById(siteId);
+		site.setUseable(enabled);
+		siteRepository.save(site);
+		return new ResponseEntity<Site>(site, HttpStatus.OK);
+	}
 	@GetMapping
 	public String site(Model model) {
 		log.info("try findAll torrent site.");

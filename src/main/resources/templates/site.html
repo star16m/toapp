@@ -30,6 +30,15 @@ function clickSite(obj) {//id, name, searchUrl, selector, torrentNameSelector, t
 	
 	console.log(currentSite);
 }
+function changeEnabled(checkTarget) {
+    return $.ajax({
+        url: "/site",
+        type: "patch",
+        cache: false,
+        data: {'siteId': $(checkTarget).data('siteid'), 'enabled':$(checkTarget).is(":checked")},
+        dataType: 'json'
+    });
+}
 </script>
 </head>
 <body>
@@ -75,7 +84,7 @@ function clickSite(obj) {//id, name, searchUrl, selector, torrentNameSelector, t
 	                                <td th:text="${site.torrentSizeReplace}">torrentSizeReplace</td>
 	                                <td th:text="${site.torrentMagnetHashSelector}">torrentMagnetSelector</td>
 	                                <td th:text="${site.torrentMagnetHashReplace}">torrentMagnetReplace</td>
-	                                <td><input type="checkbox" name="active" th:checked="${site.useable}" /></td>
+	                                <td><input type="checkbox" name="active" th:checked="${site.useable}" th:attr="data-siteid=${site.id}" th:onclick="|javascript:changeEnabled(this);|"/></td>
 	                            </tr>
 	                        </tbody>
 	                    </table>
