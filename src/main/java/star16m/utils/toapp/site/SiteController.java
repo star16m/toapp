@@ -12,14 +12,19 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,10 +47,19 @@ public class SiteController {
 		siteRepository.save(site);
 		return new ResponseEntity<Site>(site, HttpStatus.OK);
 	}
+	@DeleteMapping("/{siteId}")
+	public ResponseEntity<?> deleteSite(@PathVariable("siteId") Long siteId, Model model) {
+		Site site = siteRepository.findById(siteId);
+		if (site == null) {
+			return ResponseEntity.badRequest().build();
+		}
+		siteRepository.delete(site);
+		return ResponseEntity.noContent().build();
+	}
 	@GetMapping
-	public String site(Model model) {
+	public String site(@SortDefault(sort="id", direction=Direction.DESC) Sort sort, Model model) {
 		log.info("try findAll torrent site.");
-		List<Site> siteList = siteRepository.findAll();
+		List<Site> siteList = siteRepository.findAll(sort);
 		log.info("successfully findAll torrent site. size:" + siteList.size());
 		model.addAttribute("sites", siteList);
 		model.addAttribute("siteResult", "");
@@ -54,7 +68,7 @@ public class SiteController {
 		return "site";
 	}
 	@PostMapping
-	public String createTorrentSite(@ModelAttribute("siteCreate") @Valid Site.Create siteCreate, BindingResult result, Model model) {
+	public String createTorrentSite(@ModelAttribute("siteCreate") @Valid Site.Create siteCreate, BindingResult result, @SortDefault(sort="id", direction=Direction.DESC) Sort sort, Model model) {
 	
 		log.info("try createTorrentsite:::" + siteCreate);
 		log.info("binding result:" + result);
@@ -123,7 +137,7 @@ public class SiteController {
 				site.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
 				site.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
 				siteRepository.save(site);
-				return site(model);
+				return site(sort, model);
 			}
 		}
 		return "site";
