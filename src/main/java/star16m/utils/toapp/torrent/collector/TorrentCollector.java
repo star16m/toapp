@@ -30,6 +30,7 @@ import star16m.utils.toapp.site.Site;
 import star16m.utils.toapp.site.SiteRepository;
 import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
+import star16m.utils.toapp.torrent.TorrentUtils;
 
 @Component
 @Transactional
@@ -49,44 +50,45 @@ public class TorrentCollector {
 	private CommonService commonService;
 	@Autowired
 	private MessageRepository messageRepository;
-	
-	@Scheduled(initialDelay = 1*60*1000, fixedDelay = 30*60*1000)
+
+	@Scheduled(initialDelay = 1 * 60 * 1000, fixedDelay = 30 * 60 * 1000)
 	public void collect() {
 		List<Site> siteList = siteRepository.findByUseableTrue();
 		List<Keyword> keywordList = keywordRepository.findByIgnoreDateFalse();
-		
-		for (Site site : siteList) {
-			for (Keyword keyword : keywordList) {
+
+		siteList.stream().forEach(s -> {
+			keywordList.stream().forEach(k -> {
+				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
+				String result = null;
 				try {
-					log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
-					String result = collect(site, keyword);
-					log.info("##### collected [{}]", result);
-					commonService.saveMessage("cron-30", result);
-				} catch (IOException e) {
-					log.warn("error occured while collect torrent site[{}]", site);
-					// do other site.
+					result = collect(s, k);
+				} catch (Exception e) {
+					log.error("error occured while collect torrent file");
 				}
-			}
-		}
-			
+				log.info("##### collected [{}]", result);
+				commonService.saveMessage("cron-30", result);
+			});
+		});
 	}
-	
+
 	public static List<String> getTargetLastDays(int lastDays) {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
 		return targetDateString.subList(0, Math.min(lastDays, targetDateString.size()));
 	}
+
 	/**
 	 * 매일
 	 */
-	@Scheduled(initialDelay = 1*60*1000, fixedDelay = 360*60*1000)
+	@Scheduled(initialDelay = 1 * 60 * 1000, fixedDelay = 360 * 60 * 1000)
 	public void resetTarget() {
 		int days = resetTargetDateString();
 		log.info("delete torrent files that older than {} days.", days);
 		torrentRepository.deleteByDateStringNotIn(targetDateString);
 		messageRepository.deleteByCreateDateLessThan(new DateTime(new Date()).minusHours(6).toDate());
 	}
+
 	private static int resetTargetDateString() {
 		targetDateString.clear();
 		int days = 10;
@@ -94,9 +96,10 @@ public class TorrentCollector {
 		for (int i = 0; i < days; i++) {
 			targetDateString.add(endDate.minusDays(i).toString(formatter));
 		}
-		START_DATE_STRING = endDate.minusDays(days+1);
+		START_DATE_STRING = endDate.minusDays(days + 1);
 		return days;
 	}
+
 	public void collect(String keywordString) {
 		log.info("try to collect by keyword [{}]", keywordString);
 		final Keyword keyword = keywordRepository.findByKeyword(keywordString);
@@ -107,34 +110,29 @@ public class TorrentCollector {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						for (Site site : siteList) {
-							try {
-								String result = collect(site, keyword);
-								commonService.saveMessage("col-key", result);
-							} catch (IOException e) {
-								log.warn("error occured while collect torrent site[{}]", site);
-								// do other site.
-							}
-						}
+						siteList.stream().forEach(s->{
+							commonService.saveMessage("col-key", collect(site, keyword));
+						});
 					}
 				}).start();
 			}
 		}
 	}
+
 	public String collect(Site site, Keyword keyword) throws IOException {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
 		Document doc = null;
 		int notInTargetDate = 0;
-		int alreadyExists   = 0;
-		int success         = 0;
+		int alreadyExists = 0;
+		int success = 0;
 		int totalElementNum = 0;
 		int alreadyExistUrl = 0;
 		try {
 			String url = site.getSearchUrl();
 			if (site.getSearchUrl().contains("[KEYWORD]")) {
-				if (keyword.getKeyword()!=null && keyword.getKeyword().length() > 0) {
+				if (keyword.getKeyword() != null && keyword.getKeyword().length() > 0) {
 					log.info("replace keyword as [{}]", keyword.getKeyword());
 					url = url.replaceAll("\\[KEYWORD\\]", keyword.getKeyword());
 					log.info("url is [{}]", url);
@@ -157,7 +155,7 @@ public class TorrentCollector {
 				for (Element element : elements) {
 
 					String aString = element.text();
-					String tmpDateString = replaceGroup(aString, "(\\d{6,8})");
+					String tmpDateString = TorrentUtils.replaceGroup(aString, "(\\d{6,8})");
 					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
 						tmpDateString = "20" + tmpDateString;
 						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
@@ -180,16 +178,16 @@ public class TorrentCollector {
 						String torrentSize = null;
 						String torrentMagnetHash = null;
 						if (!StringUtils.isEmpty(site.getTorrentNameSelector())) {
-							torrentName = replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
+							torrentName = TorrentUtils.replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
 						}
 						if (!StringUtils.isEmpty(site.getTorrentSizeSelector())) {
-							torrentSize = replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
+							torrentSize = TorrentUtils.replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
 						}
 						if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
-							torrentMagnetHash = replaceGroup(itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
+							torrentMagnetHash = TorrentUtils.replaceGroup( itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
 						}
 						t.setTitle(torrentName.substring(0, Math.min(255, torrentName.length())));
-						String dateString = replaceGroup(torrentName, "(\\d{6,8})");
+						String dateString = TorrentUtils.replaceGroup(torrentName, "(\\d{6,8})");
 						if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
 							dateString = "--------";
 						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
@@ -200,9 +198,6 @@ public class TorrentCollector {
 							notInTargetDate++;
 							continue;
 						}
-//						if (!keyword.isIgnoreDate() && !dateString.equals("--------")) {
-//							break;
-//						}
 						t.setDateString(dateString);
 						t.setSize(torrentSize);
 						t.setMagnetCode(torrentMagnetHash);
@@ -225,17 +220,5 @@ public class TorrentCollector {
 			throw e;
 		}
 		return "Total[" + totalElementNum + "], alreadyExistUrl[" + alreadyExistUrl + ", notInDate[" + notInTargetDate + "], already[" + alreadyExists + "], success[" + success + "]";
-	}
-	private String replaceGroup(String orgString, String patternString) {
-		String replaceString = new String(orgString);
-		if (!StringUtils.isEmpty(patternString)) {
-			Pattern p = Pattern.compile(patternString);
-			Matcher m = p.matcher(replaceString);
-			if (m.find()) {
-				replaceString = m.group(1);
-			}
-		}
-		log.info("REPLACE {}====={}", orgString, replaceString);
-		return replaceString;
 	}
 }

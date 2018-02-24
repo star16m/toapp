@@ -55,10 +55,9 @@ public class TorrentController {
 		}
 		List<Keyword> keywordList = keywordRepository.findAll();
 		log.debug("successfully findAll torrent site. size:" + torrentList.size());
+
 		model.addAttribute("torrents", torrentList);
 		model.addAttribute("keywords", keywordList);
-		
-		
 		return "torrent";
 	}
 	@PostMapping("search")
