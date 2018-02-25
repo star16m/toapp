@@ -56,12 +56,12 @@ public class TorrentCollector {
 		List<Site> siteList = siteRepository.findByUseableTrue();
 		List<Keyword> keywordList = keywordRepository.findByIgnoreDateFalse();
 
-		siteList.stream().forEach(s -> {
-			keywordList.stream().forEach(k -> {
-				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
+		siteList.stream().forEach(site -> {
+			keywordList.stream().forEach(keyword -> {
+				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), eyword.getKeyword());
 				String result = null;
 				try {
-					result = collect(s, k);
+					result = collect(site, keyword);
 				} catch (Exception e) {
 					log.error("error occured while collect torrent file");
 				}
@@ -110,7 +110,7 @@ public class TorrentCollector {
 				new Thread(new Runnable() {
 					@Override
 					public void run() {
-						siteList.stream().forEach(s->{
+						siteList.stream().forEach(site->{
 							commonService.saveMessage("col-key", collect(site, keyword));
 						});
 					}
