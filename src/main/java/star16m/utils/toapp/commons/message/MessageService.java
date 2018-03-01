@@ -1,4 +1,4 @@
-package star16m.utils.toapp.commons;
+package star16m.utils.toapp.commons.message;
 
 import java.util.Date;
 
@@ -7,12 +7,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import star16m.utils.toapp.commons.message.Message;
-import star16m.utils.toapp.commons.message.MessageRepository;
-
 @Service
 @Transactional
-public class CommonService {
+public class MessageService {
 
 	@Autowired
 	private MessageRepository messageRepository;

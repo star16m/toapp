@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.commons.ToAppUtils;
+import star16m.utils.toapp.commons.utils.ToAppUtils;
 
 @Controller
 @RequestMapping("site")

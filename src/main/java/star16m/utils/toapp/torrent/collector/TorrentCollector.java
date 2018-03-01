@@ -22,9 +22,9 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
-import star16m.utils.toapp.commons.CommonService;
-import star16m.utils.toapp.commons.ToAppUtils;
 import star16m.utils.toapp.commons.message.MessageRepository;
+import star16m.utils.toapp.commons.message.MessageService;
+import star16m.utils.toapp.commons.utils.ToAppUtils;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
@@ -47,7 +47,7 @@ public class TorrentCollector {
 	@Autowired
 	private TorrentRepository torrentRepository;
 	@Autowired
-	private CommonService commonService;
+	private MessageService commonService;
 	@Autowired
 	private MessageRepository messageRepository;
 

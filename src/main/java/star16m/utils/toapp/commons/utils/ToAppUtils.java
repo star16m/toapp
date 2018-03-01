@@ -1,4 +1,4 @@
-package star16m.utils.toapp.commons;
+package star16m.utils.toapp.commons.utils;
 
 import org.thymeleaf.util.StringUtils;
 import java.util.regex.Matcher;
