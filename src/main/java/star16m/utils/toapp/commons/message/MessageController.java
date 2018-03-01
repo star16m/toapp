@@ -1,4 +1,4 @@
-package star16m.utils.toapp.commons;
+package star16m.utils.toapp.commons.message;
 
 import java.util.List;
 import java.util.Map;

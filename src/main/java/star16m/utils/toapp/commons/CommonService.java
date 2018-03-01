@@ -7,6 +7,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import star16m.utils.toapp.commons.message.Message;
+import star16m.utils.toapp.commons.message.MessageRepository;
+
 @Service
 @Transactional
 public class CommonService {
