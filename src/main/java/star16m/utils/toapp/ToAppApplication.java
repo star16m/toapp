@@ -9,10 +9,10 @@ import org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean;
 
 @SpringBootApplication
 @EnableScheduling
-public class ToappApplication {
+public class ToAppApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ToappApplication.class, args);
+		SpringApplication.run(ToAppApplication.class, args);
 	}
 
 	@Bean
