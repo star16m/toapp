@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
+import star16m.utils.toapp.commons.ToappUtils;
 
 @Controller
 @RequestMapping("site")
@@ -111,13 +112,13 @@ public class SiteController {
 					log.info("DETAIL PAGE {}", itemDoc);
 					model.addAttribute("siteDetailResult", itemDoc);
 					if (!StringUtils.isEmpty(siteCreate.getTorrentNameSelector())) {
-						model.addAttribute("torrentNameResult", replaceGroup(itemDoc.select(siteCreate.getTorrentNameSelector()).text(), siteCreate.getTorrentNameReplace()));
+						model.addAttribute("torrentNameResult", ToappUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentNameSelector()).text(), siteCreate.getTorrentNameReplace()));
 					}
 					if (!StringUtils.isEmpty(siteCreate.getTorrentSizeSelector())) {
-						model.addAttribute("torrentSizeResult", replaceGroup(itemDoc.select(siteCreate.getTorrentSizeSelector()).text(), siteCreate.getTorrentSizeReplace()));
+						model.addAttribute("torrentSizeResult", ToappUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentSizeSelector()).text(), siteCreate.getTorrentSizeReplace()));
 					}
 					if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashSelector())) {
-						model.addAttribute("torrentMagnetHashResult", replaceGroup(itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml(), siteCreate.getTorrentMagnetHashReplace()));
+						model.addAttribute("torrentMagnetHashResult", ToappUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml(), siteCreate.getTorrentMagnetHashReplace()));
 					}
 				}
 			} catch (IOException e) {
@@ -141,16 +142,5 @@ public class SiteController {
 			}
 		}
 		return "site";
-	}
-	private String replaceGroup(String orgString, String patternString) {
-		String replaceString = new String(orgString);
-		if (!StringUtils.isEmpty(patternString)) {
-			Pattern p = Pattern.compile(patternString);
-			Matcher m = p.matcher(replaceString);
-			if (m.find()) {
-				replaceString = m.group(1);
-			}
-		}
-		return replaceString;
 	}
 }
