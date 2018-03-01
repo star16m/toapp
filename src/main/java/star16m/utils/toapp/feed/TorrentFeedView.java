@@ -1,4 +1,4 @@
-package star16m.utils.toapp.torrent;
+package star16m.utils.toapp.feed;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -19,6 +19,8 @@ import com.rometools.rome.feed.rss.Item;
 
 import lombok.Getter;
 import lombok.Setter;
+import star16m.utils.toapp.torrent.Torrent;
+import star16m.utils.toapp.torrent.TorrentRepository;
 
 @Component
 @Getter
@@ -41,12 +43,6 @@ public class TorrentFeedView extends AbstractRssFeedView {
 
 	protected List<Item> buildFeedItems(Map<String, Object> model, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
-/*
-	    return torrentRepository.findTorrentByDownload(true)
-	    		.stream()
-                .map(this::createItem)
-                .collect(Collectors.toList());
-*/
             List<Torrent> torrentList = torrentRepository.findTorrentByDownload(true);
             List<Item> torrentList2 = new ArrayList<Item>();
             for (Torrent torrent : torrentList) {

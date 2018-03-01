@@ -58,7 +58,7 @@ public class TorrentCollector {
 
 		siteList.stream().forEach(site -> {
 			keywordList.stream().forEach(keyword -> {
-				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), eyword.getKeyword());
+				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
 				String result = null;
 				try {
 					result = collect(site, keyword);
@@ -111,7 +111,12 @@ public class TorrentCollector {
 					@Override
 					public void run() {
 						siteList.stream().forEach(site->{
-							commonService.saveMessage("col-key", collect(site, keyword));
+							try {
+								String collectResult = collect(site, keyword);
+								commonService.saveMessage("col-key", collectResult);
+							} catch (IOException e) {
+								log.warn(e.getMessage());
+							}
 						});
 					}
 				}).start();
