@@ -4,8 +4,8 @@ import org.thymeleaf.util.StringUtils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ToappUtils {
-    private ToappUtils() {
+public class ToAppUtils {
+    private ToAppUtils() {
     }
 
     public static String replaceGroup(String orgString, String patternString) {
