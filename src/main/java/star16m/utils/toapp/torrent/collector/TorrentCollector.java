@@ -24,13 +24,13 @@ import org.thymeleaf.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.commons.CommonService;
 import star16m.utils.toapp.commons.MessageRepository;
+import star16m.utils.toapp.commons.ToappUtils;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
 import star16m.utils.toapp.site.SiteRepository;
 import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
-import star16m.utils.toapp.torrent.TorrentUtils;
 
 @Component
 @Transactional
@@ -160,7 +160,7 @@ public class TorrentCollector {
 				for (Element element : elements) {
 
 					String aString = element.text();
-					String tmpDateString = TorrentUtils.replaceGroup(aString, "(\\d{6,8})");
+					String tmpDateString = ToappUtils.replaceGroup(aString, "(\\d{6,8})");
 					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
 						tmpDateString = "20" + tmpDateString;
 						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
@@ -183,16 +183,16 @@ public class TorrentCollector {
 						String torrentSize = null;
 						String torrentMagnetHash = null;
 						if (!StringUtils.isEmpty(site.getTorrentNameSelector())) {
-							torrentName = TorrentUtils.replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
+							torrentName = ToappUtils.replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
 						}
 						if (!StringUtils.isEmpty(site.getTorrentSizeSelector())) {
-							torrentSize = TorrentUtils.replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
+							torrentSize = ToappUtils.replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
 						}
 						if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
-							torrentMagnetHash = TorrentUtils.replaceGroup( itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
+							torrentMagnetHash = ToappUtils.replaceGroup( itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
 						}
 						t.setTitle(torrentName.substring(0, Math.min(255, torrentName.length())));
-						String dateString = TorrentUtils.replaceGroup(torrentName, "(\\d{6,8})");
+						String dateString = ToappUtils.replaceGroup(torrentName, "(\\d{6,8})");
 						if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
 							dateString = "--------";
 						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {

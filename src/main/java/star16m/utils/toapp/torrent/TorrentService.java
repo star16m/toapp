@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
-public class ToService {
+public class TorrentService {
 	@Autowired
 	private TorrentRepository repository;
 	public List<Torrent> selectAll() {

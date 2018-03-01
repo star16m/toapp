@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
-import star16m.utils.toapp.torrent.ToService;
+import star16m.utils.toapp.torrent.TorrentService;
 import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
@@ -21,7 +21,7 @@ import star16m.utils.toapp.torrent.collector.TorrentCollector;
 @Slf4j
 public class ToAppController {
 	@Autowired
-	private ToService service;
+	private TorrentService service;
 	@Autowired
 	private TorrentRepository torrentRepository;
 	@Autowired

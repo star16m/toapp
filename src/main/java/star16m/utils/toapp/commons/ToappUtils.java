@@ -1,11 +1,11 @@
-package star16m.utils.toapp.torrent;
+package star16m.utils.toapp.commons;
 
 import org.thymeleaf.util.StringUtils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TorrentUtils {
-    private TorrentUtils() {
+public class ToappUtils {
+    private ToappUtils() {
     }
 
     public static String replaceGroup(String orgString, String patternString) {
