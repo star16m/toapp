@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.transaction.Transactional;
 
@@ -19,7 +17,6 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.StringUtils;
 
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.commons.message.MessageRepository;
@@ -29,7 +26,6 @@ import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
 import star16m.utils.toapp.site.SiteRepository;
-import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
 
 @Component
@@ -145,7 +141,7 @@ public class TorrentCollector {
 			}
 			doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
 			if (doc != null) {
-				Elements elements = doc.select(site.getSelector());
+				Elements elements = doc.select(site.getPageSelector());
 				if (elements == null || elements.size() == 0) {
 					return "[" + keyword.getKeyword() + "] [element not found]";
 				}
@@ -174,6 +170,7 @@ public class TorrentCollector {
 						alreadyExistUrl++;
 						return "[" + keyword.getKeyword() + "] already exists torrent url [" + detailUrl + "]. collect is skipped.";
 					}
+					/*
 					Document itemDoc = null;
 					try {
 						itemDoc = Jsoup.connect(detailUrl).userAgent(USER_AGENT).get();
@@ -218,6 +215,7 @@ public class TorrentCollector {
 						}
 					} catch (IOException e) {
 					}
+					*/
 				}
 			}
 		} catch (IOException e) {

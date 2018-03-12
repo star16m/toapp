@@ -1,16 +1,13 @@
 package star16m.utils.toapp.site;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
@@ -22,22 +19,26 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.thymeleaf.util.StringUtils;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import lombok.extern.slf4j.Slf4j;
+import star16m.utils.toapp.commons.TorrentResult;
+import star16m.utils.toapp.commons.errors.ToAppException;
+import star16m.utils.toapp.commons.page.PageConnector;
 import star16m.utils.toapp.commons.utils.ToAppUtils;
 
 @Controller
 @RequestMapping("site")
 @Slf4j
 public class SiteController {
-	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
+	@Autowired
+	private SiteService siteService;
 	@Autowired
 	private SiteRepository siteRepository;
 	
@@ -68,79 +69,135 @@ public class SiteController {
 		model.addAttribute("siteCreate", new Site.Create());
 		return "site";
 	}
+	@PatchMapping("check")
+	public @ResponseBody TorrentResult<Map<String, String>> checkSite(@RequestBody @Valid Site.Create siteCreate, BindingResult result) {
+		TorrentResult<Map<String, String>> torrentResult = new TorrentResult<Map<String, String>>();
+		if (result.hasErrors()) {
+			log.warn("errors:" + result);
+			torrentResult.setSuccess(false);
+			torrentResult.setMessage("it's error");
+			
+		} else {
+			try {
+				siteService.validationSite(siteCreate);
+				String urlString = siteService.getSiteSearchString(siteCreate);
+				log.debug("url is [{}]", urlString);
+				final Map<String, String> foundResult = new HashMap<String, String>();
+				PageConnector pageConnector = new PageConnector(urlString);
+				int size = pageConnector.find(siteCreate.getPageSelector(), (e, i) -> {
+					foundResult.put("data_" + i, e.attr("abs:href"));
+					log.info("found tag [{}]", e);
+				});
+				if (size > 0) {
+					torrentResult.setMessage(String.format("found %d tags.", size));
+					torrentResult.setSuccess(true);
+					foundResult.put("size", String.valueOf(size));
+					// first url string
+					String detailPageURL = foundResult.get("data_0");
+					foundResult.put("detailPageURL", detailPageURL);
+					torrentResult.setData(foundResult);
+				} else {
+					torrentResult.setMessage(String.format("found %d tags.", size));
+				}
+			} catch (IOException | ToAppException e) {
+				torrentResult.setSuccess(false);
+				torrentResult.setMessage(e.getMessage());
+			}
+		}
+		return torrentResult;
+	}
+	@PatchMapping("detail/check")
+	public @ResponseBody TorrentResult<String> checkDetailSite(@RequestBody @Valid Site.SiteCreate siteCreate, BindingResult result) {
+		TorrentResult<String> torrentResult = new TorrentResult<>();
+		log.info("page : [{}]", siteCreate);
+		log.info("result [{}]", result);
+		if (result.hasErrors()) {
+			log.info("errors:" + result);
+			torrentResult.setSuccess(false);
+			torrentResult.setMessage("it's error");
+		} else {
+			try {
+				Site.Create siteC = new Site.Create();
+				siteC.setSiteName(siteCreate.getSiteName());
+				siteC.setPageSelector(siteCreate.getPageSelector());
+				siteC.setSiteKeyword(siteCreate.getSiteKeyword());
+				siteC.setSiteSearchUrl(siteCreate.getTempDetailURL());
+				
+				Site.DetailPage detailPage = new Site.DetailPage();
+				detailPage.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
+				detailPage.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
+				detailPage.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
+				detailPage.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
+				detailPage.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
+				detailPage.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
+				siteService.validationDetailSite(detailPage);
+				String urlString = siteService.getSiteSearchString(siteC);
+				log.info("detail page url is [{}]", urlString);
+				final Map<String, String> foundResult = new HashMap<String, String>();
+				PageConnector pageConnector = new PageConnector(urlString);
+				String torrentName = pageConnector.find(siteCreate.getTorrentNameSelector());
+				String torrentSize = pageConnector.find(siteCreate.getTorrentSizeSelector());
+				String torrentMagnet = pageConnector.find(siteCreate.getTorrentMagnetHashSelector());
+				log.info("founded torrentName : [{}]", torrentName);
+				log.info("founded torrentSize : [{}]", torrentSize);
+				log.info("founded torrentMagnet : [{}]", torrentMagnet);
+				boolean selectValidation = true;
+				selectValidation &= ToAppUtils.isNotEmpty(torrentName);
+				selectValidation &= ToAppUtils.isNotEmpty(torrentSize);
+				selectValidation &= ToAppUtils.isNotEmpty(torrentMagnet);
+				foundResult.put("01.foundTorrentName", ToAppUtils.getString(torrentName, "[NOT FOUND TORRENT NAME]"));
+				foundResult.put("02.foundTorrentSize", ToAppUtils.getString(torrentSize, "[NOT FOUND TORRENT SIZE]"));
+				foundResult.put("03.foundTorrentMagnet", ToAppUtils.getString(torrentMagnet, "[NOT FOUND TORRENT MAGNET]"));
+				if (selectValidation) {
+					// founded all item.
+					if (!ToAppUtils.isEmpty(siteCreate.getTorrentNameReplace())) {
+						String foundTorrentNameReplaced = ToAppUtils.replaceGroup(torrentName, siteCreate.getTorrentNameReplace());
+						log.info("foundTorrentNameReplaced : [{}]", foundTorrentNameReplaced);
+						foundResult.put("01.foundTorrentName", foundTorrentNameReplaced);
+					}
+					if (!ToAppUtils.isEmpty(siteCreate.getTorrentSizeReplace())) {
+						String foundTorrentSizeReplaced = ToAppUtils.replaceGroup(torrentSize, siteCreate.getTorrentSizeReplace());
+						log.info("foundTorrentNameReplaced : [{}]", foundTorrentSizeReplaced);
+						foundResult.put("02.foundTorrentSize", foundTorrentSizeReplaced);
+					}
+					if (!ToAppUtils.isEmpty(siteCreate.getTorrentMagnetHashReplace())) {
+						String foundTorrentMagnetReplaced = ToAppUtils.replaceGroup(torrentMagnet, siteCreate.getTorrentMagnetHashReplace());
+						log.info("foundTorrentMagnetReplaced : [{}]", foundTorrentMagnetReplaced);
+						foundResult.put("03.foundTorrentMagnet", foundTorrentMagnetReplaced);
+					}
+					torrentResult.setSuccess(true);
+					torrentResult.setMessage("found item.");
+				}
+				torrentResult.setData(foundResult.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry -> entry.getKey() + " - " + entry.getValue()).collect(Collectors.joining("\n")));
+			} catch (IOException | ToAppException e) {
+				torrentResult.setSuccess(false);
+				torrentResult.setMessage(e.getMessage());
+			}
+		}
+		return torrentResult;
+	}
 	@PostMapping
-	public String createTorrentSite(@ModelAttribute("siteCreate") @Valid Site.Create siteCreate, BindingResult result, @SortDefault(sort="id", direction=Direction.DESC) Sort sort, Model model) {
-	
+	public @ResponseBody TorrentResult<Site> createTorrentSite(@RequestBody Site.SiteCreate siteCreate, BindingResult result) {
 		log.info("try createTorrentsite:::" + siteCreate);
-		log.info("binding result:" + result);
-		log.info("model:" + model);
+		TorrentResult<Site> torrentResult = new TorrentResult<>();
 		if (!result.hasErrors()) {
 			log.info("try collect site info.");
-			Document doc = null;
-			try {
-				String url = siteCreate.getSiteSearchUrl();
-				if (siteCreate.getSiteSearchUrl().contains("[KEYWORD]")) {
-					if (siteCreate.getSiteKeyword()!=null && siteCreate.getSiteKeyword().length() > 0) {
-						log.info("replace keyword as [{}]", siteCreate.getSiteKeyword());
-						url = url.replaceAll("\\[KEYWORD\\]", siteCreate.getSiteKeyword());
-						log.info("url is [{}]", url);
-					} else {
-						log.info("keyword [KEYWORD] is not replaced.");
-						result.rejectValue("siteKeyword", null, "[KEYWORD] 를 입력해 주세요.");
-						return "site";
-					}
-				}
-				doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
-				if (doc != null) {
-					Elements elements = doc.select(siteCreate.getSiteSelector());
-					log.info("list elements {}", elements.toString());
-					if (elements == null || elements.size() == 0) {
-						model.addAttribute("siteResult", "there is no result");
-						return "site";
-					}
-					for (Element e : elements) {
-						if (!e.tagName().equalsIgnoreCase("a")) {
-							log.info("there is not a tag. [{}]", e.tagName());
-							result.rejectValue("siteSelector", null, "a tag 만 조회 가능합니다.");
-							return "site";
-						}
-					}
-					model.addAttribute("siteResult", elements.toString());
-					log.info("try to connect torrent detail page [{}]", elements.get(0));
-					Element element = elements.get(0);
-					Document itemDoc = Jsoup.connect(element.attr("abs:href")).userAgent(USER_AGENT).get();
-					log.info("DETAIL PAGE {}", itemDoc);
-					model.addAttribute("siteDetailResult", itemDoc);
-					if (!StringUtils.isEmpty(siteCreate.getTorrentNameSelector())) {
-						model.addAttribute("torrentNameResult", ToAppUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentNameSelector()).text(), siteCreate.getTorrentNameReplace()));
-					}
-					if (!StringUtils.isEmpty(siteCreate.getTorrentSizeSelector())) {
-						model.addAttribute("torrentSizeResult", ToAppUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentSizeSelector()).text(), siteCreate.getTorrentSizeReplace()));
-					}
-					if (!StringUtils.isEmpty(siteCreate.getTorrentMagnetHashSelector())) {
-						model.addAttribute("torrentMagnetHashResult", ToAppUtils.replaceGroup(itemDoc.select(siteCreate.getTorrentMagnetHashSelector()).outerHtml(), siteCreate.getTorrentMagnetHashReplace()));
-					}
-				}
-			} catch (IOException e) {
-				model.addAttribute("site.result.error", e.getMessage());
-			}
+			Site site = new Site();
+			site.setName(siteCreate.getSiteName());
+			site.setSearchUrl(siteCreate.getSiteSearchUrl());
+			site.setPageSelector(siteCreate.getPageSelector());
+			site.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
+			site.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
+			site.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
+			site.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
+			site.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
+			site.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
+			siteRepository.save(site);
+			torrentResult.setSuccess(true);
+			torrentResult.setMessage("create result");
+			torrentResult.setData(site);
+			return torrentResult;
 		}
-		if (!result.hasErrors()) {
-			if (model.containsAttribute("siteDetailResult") && model.containsAttribute("torrentNameResult") && model.containsAttribute("torrentSizeResult") && model.containsAttribute("torrentMagnetHashResult")) {
-				Site site = new Site();
-				site.setName(siteCreate.getSiteName());
-				site.setSearchUrl(siteCreate.getSiteSearchUrl());
-				site.setSelector(siteCreate.getSiteSelector());
-				site.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
-				site.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
-				site.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
-				site.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
-				site.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
-				site.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
-				siteRepository.save(site);
-				return site(sort, model);
-			}
-		}
-		return "site";
+		return torrentResult;
 	}
 }

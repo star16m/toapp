@@ -70,7 +70,7 @@ public class TorrentController {
 			} else {
 				key = new Keyword();
 				key.setKeyword(keyword);
-				key.setIgnoreDate(true);
+//				key.setIgnoreDate(true);
 				keywordRepository.save(key);
 				collector.collect(keyword);
 			}
