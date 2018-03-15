@@ -1,33 +1,43 @@
 package star16m.utils.toapp.site;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import star16m.utils.toapp.commons.errors.ToAppException;
-import star16m.utils.toapp.commons.utils.ToAppUtils;
+import star16m.utils.toapp.torrent.Torrent;
+import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 @Service
 @Transactional
 public class SiteService {
 
-	public static final String KEYWORD = "[KEYWORD]";
+	@Autowired
+	private TorrentCollector torrentCollector;
 
-	public void validationSite(Site.Create siteInfo) throws ToAppException {
+	public List<Torrent.TorrentLinkInfo> findDetailPageElement(Site.SiteInfo siteInfo) throws ToAppException {
 		if (siteInfo == null || siteInfo.getSiteSearchUrl() == null || siteInfo.getSiteKeyword() == null || siteInfo.getPageSelector() == null) {
 			throw new ToAppException("Not found site info.");
 		}
-		if (ToAppUtils.isEmpty(siteInfo.getSiteKeyword()) || !siteInfo.getSiteSearchUrl().contains(KEYWORD)) {
-			throw new ToAppException("site URL must be has " + KEYWORD);
-		}
+		String urlString = this.torrentCollector.getTorrentURL(siteInfo.getSiteSearchUrl(), siteInfo.getSiteKeyword());
+		List<Torrent.TorrentLinkInfo> foundResult = this.torrentCollector.findTorrentLinks(urlString, siteInfo.getPageSelector());
+		return foundResult;
 	}
-	public void validationDetailSite(Site.DetailPage pageInfo) throws ToAppException {
-		if (pageInfo == null || ToAppUtils.isEmpty(pageInfo.getTorrentNameSelector()) || ToAppUtils.isEmpty(pageInfo.getTorrentSizeSelector()) || ToAppUtils.isEmpty(pageInfo.getTorrentMagnetHashSelector())) {
-			throw new ToAppException("Not found site info.");
-		}
+	public Torrent.TorrentSimpleInfo findTorrentDetailPageInfo(Site.SiteCreate siteCreate) throws ToAppException {
+		String urlString = this.torrentCollector.getTorrentURL(siteCreate.getTorrentDetailPageURL(), siteCreate.getSiteKeyword());
+		Site tmpSite = new Site();
+		tmpSite.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
+		tmpSite.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
+		tmpSite.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
+		tmpSite.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
+		tmpSite.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
+		tmpSite.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
+		
+		Torrent.TorrentSimpleInfo torrentInfo = this.torrentCollector.findTorrentInfo(urlString, tmpSite);
+		return torrentInfo;
 	}
 	
-	public String getSiteSearchString(Site.Create siteInfo) {
-		return ToAppUtils.replace(siteInfo.getSiteSearchUrl(), SiteService.KEYWORD, siteInfo.getSiteKeyword());
-	}
 }

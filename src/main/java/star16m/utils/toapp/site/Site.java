@@ -21,66 +21,6 @@ import lombok.ToString;
 public class Site {
 
 	private static final String URL_PATTERN = "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;\\[\\]]*[-a-zA-Z0-9+&@#/%=~_|\\[\\]]";
-
-	@Getter
-	@Setter
-	@ToString
-	public static class Create {
-		@NotEmpty
-		@Size(min = 4, max = 20)
-		private String siteName;
-		@NotEmpty
-		@Size(min = 10, max = 255)
-		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
-		private String siteSearchUrl;
-		@NotEmpty
-		@Size(min = 4, max = 255)
-		private String pageSelector;
-		private String siteKeyword;
-	}
-	@Getter
-	@Setter
-	@ToString
-	public static class DetailPage {
-		private String tempDetailURL;
-		@NotNull
-		private String torrentNameSelector;
-		private String torrentNameReplace;
-		@NotNull
-		private String torrentSizeSelector;
-		private String torrentSizeReplace;
-		@NotNull
-		private String torrentMagnetHashSelector;
-		private String torrentMagnetHashReplace;
-		private boolean createSite;
-	}
-	@Getter
-	@Setter
-	@ToString
-	public static class SiteCreate {
-		@NotEmpty
-		@Size(min = 4, max = 20)
-		private String siteName;
-		@NotEmpty
-		@Size(min = 10, max = 255)
-		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
-		private String siteSearchUrl;
-		@NotEmpty
-		@Size(min = 4, max = 255)
-		private String pageSelector;
-		private String siteKeyword;
-		private String tempDetailURL;
-		@NotNull
-		private String torrentNameSelector;
-		private String torrentNameReplace;
-		@NotNull
-		private String torrentSizeSelector;
-		private String torrentSizeReplace;
-		@NotNull
-		private String torrentMagnetHashSelector;
-		private String torrentMagnetHashReplace;
-	}
-
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -105,4 +45,47 @@ public class Site {
 	@NotNull
 	private String torrentMagnetHashSelector;
 	private String torrentMagnetHashReplace;
+
+	@Getter
+	@Setter
+	@ToString
+	public static class SiteInfo {
+		@NotEmpty
+		@Size(min = 4, max = 20)
+		private String siteName;
+		@NotEmpty
+		@Size(min = 10, max = 255)
+		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
+		private String siteSearchUrl;
+		@NotEmpty
+		@Size(min = 4, max = 255)
+		private String pageSelector;
+		private String siteKeyword;
+	}
+	@Getter
+	@Setter
+	@ToString
+	public static class SiteCreate {
+		@NotEmpty
+		@Size(min = 4, max = 20)
+		private String siteName;
+		@NotEmpty
+		@Size(min = 10, max = 255)
+		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
+		private String siteSearchUrl;
+		@NotEmpty
+		@Size(min = 4, max = 255)
+		private String pageSelector;
+		private String siteKeyword;
+		private String torrentDetailPageURL;
+		@NotNull
+		private String torrentNameSelector;
+		private String torrentNameReplace;
+		@NotNull
+		private String torrentSizeSelector;
+		private String torrentSizeReplace;
+		@NotNull
+		private String torrentMagnetHashSelector;
+		private String torrentMagnetHashReplace;
+	}
 }

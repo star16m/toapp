@@ -246,6 +246,7 @@
                 }
                 $('div.detailrow').hide();
                 $('textarea.siteresult').text();
+                $('div.siterow > div > div.panel').removeClass('panel-danger');
                 return $.ajax({
                     url: "/site/check",
                     type: "patch",
@@ -254,12 +255,13 @@
                     data: JSON.stringify(checkForm),
                     dataType: 'json',
                     success: function (result) {
-                        $('textarea.siteresult').text(result.message + (result.success ? "\nDETAIL PAGE [" + result.data.detailPageURL + "]" : ""));
-                        $("div.detailrow").data("detailurl", result.data.detailPageURL);
+                        // $('textarea.siteresult').text(result.message + (result.success ? "\nDETAIL PAGE [" + result.data.detailPageURL + "]" : ""));
+                        $("div.detailrow").data("detailinfo", result.data);
+                        $('textarea.siteresult').text(result.message);
                         if (result.success) {
                             $('div.detailrow').show();
                         } else {
-                            alert("Can't search site. [" + result.message + "]");
+                        	$('div.siterow > div > div.panel').addClass('panel-danger');
                         }
                     }
                 });
@@ -298,7 +300,7 @@
                 	return;
                 }
             	$('button.btn-create').hide();
-            	checkForm["tempDetailURL"] = $("div.detailrow").data("detailurl");
+            	checkForm["torrentDetailPageURL"] = $("div.detailrow").data("detailinfo")[0].linkURL;
             	$('textarea.detailresult').text("");
                 return $.ajax({
                     url: "/site/detail/check",
@@ -309,7 +311,11 @@
                     dataType: 'json',
                     success: function (result) {
                     	if (result.success) { $('button.btn-create').show(); }
-                        $('textarea.detailresult').text(eval(JSON.stringify(result.data)));
+                        $('textarea.detailresult').text(
+                        	  "torrentName : " + result.data.torrentName + "\n"
+                        	+ "torrentSize : " + result.data.torrentSize + "\n"
+                        	+ "torrentMagnet : " + result.data.torrentMagnet
+                        );
                     }
                 });
             });
@@ -351,8 +357,11 @@
                     data: JSON.stringify(checkForm),
                     dataType: 'json',
                     success: function (result) {
-                    	if (result.success) { location.reload(); }
-                    	alert(result.message);
+                    	if (result.success) {
+                    		location.reload();
+                    	} else {
+                    		alert(result.message);
+                    	}
                     }
                 });
             });

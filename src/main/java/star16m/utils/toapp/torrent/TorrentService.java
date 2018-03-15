@@ -13,13 +13,6 @@ public class TorrentService {
 	@Autowired
 	private TorrentRepository repository;
 	public List<Torrent> selectAll() {
-//		Torrent t = new Torrent();
-//		t.setTitle("haha");
-//		t.setSize("2gb");
-//		t.setUrl("http://haha.com");
-//		t.setMagnetCode("lhaksjfhlakjsdfhlajksdf");
-//		t.setDescription("test Torrent");
-//		repository.save(t);
 		return repository.findAll();
 	}
 	

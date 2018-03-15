@@ -11,6 +11,9 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+import org.joda.time.DateTime;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -50,5 +53,23 @@ public class Torrent {
 			}
 		}
 		return null;
+	}
+	@Getter
+	@Setter
+	@ToString
+	public static class TorrentLinkInfo {
+		@NotEmpty
+		private String title;
+		@NotEmpty
+		private String linkURL;
+		private DateTime createDate;
+	}
+	@Getter
+	@Setter
+	@ToString
+	public static class TorrentSimpleInfo {
+		private String torrentName;
+		private String torrentSize;
+		private String torrentMagnet;
 	}
 }

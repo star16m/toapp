@@ -1,9 +1,6 @@
 package star16m.utils.toapp.site;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -30,8 +27,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import lombok.extern.slf4j.Slf4j;
 import star16m.utils.toapp.commons.TorrentResult;
 import star16m.utils.toapp.commons.errors.ToAppException;
-import star16m.utils.toapp.commons.page.PageConnector;
 import star16m.utils.toapp.commons.utils.ToAppUtils;
+import star16m.utils.toapp.torrent.Torrent;
 
 @Controller
 @RequestMapping("site")
@@ -66,40 +63,25 @@ public class SiteController {
 		model.addAttribute("sites", siteList);
 		model.addAttribute("siteResult", "");
 		model.addAttribute("siteDetailResult", "");
-		model.addAttribute("siteCreate", new Site.Create());
+		model.addAttribute("siteCreate", new Site.SiteInfo());
 		return "site";
 	}
 	@PatchMapping("check")
-	public @ResponseBody TorrentResult<Map<String, String>> checkSite(@RequestBody @Valid Site.Create siteCreate, BindingResult result) {
-		TorrentResult<Map<String, String>> torrentResult = new TorrentResult<Map<String, String>>();
+	public @ResponseBody TorrentResult<List<Torrent.TorrentLinkInfo>> checkSite(@RequestBody @Valid Site.SiteInfo siteInfo, BindingResult result) {
+		TorrentResult<List<Torrent.TorrentLinkInfo>> torrentResult = new TorrentResult<>();
 		if (result.hasErrors()) {
 			log.warn("errors:" + result);
 			torrentResult.setSuccess(false);
-			torrentResult.setMessage("it's error");
-			
+			torrentResult.setMessage(result.getFieldErrors().stream().map(f -> f.getField() + " : " + f.getDefaultMessage()).collect(Collectors.joining("\n")));
 		} else {
 			try {
-				siteService.validationSite(siteCreate);
-				String urlString = siteService.getSiteSearchString(siteCreate);
-				log.debug("url is [{}]", urlString);
-				final Map<String, String> foundResult = new HashMap<String, String>();
-				PageConnector pageConnector = new PageConnector(urlString);
-				int size = pageConnector.find(siteCreate.getPageSelector(), (e, i) -> {
-					foundResult.put("data_" + i, e.attr("abs:href"));
-					log.info("found tag [{}]", e);
-				});
-				if (size > 0) {
-					torrentResult.setMessage(String.format("found %d tags.", size));
-					torrentResult.setSuccess(true);
-					foundResult.put("size", String.valueOf(size));
-					// first url string
-					String detailPageURL = foundResult.get("data_0");
-					foundResult.put("detailPageURL", detailPageURL);
-					torrentResult.setData(foundResult);
-				} else {
-					torrentResult.setMessage(String.format("found %d tags.", size));
-				}
-			} catch (IOException | ToAppException e) {
+				log.info("try check site url info [{}]", siteInfo.getSiteSearchUrl());
+				List<Torrent.TorrentLinkInfo> foundLinkResult = siteService.findDetailPageElement(siteInfo);
+				log.info("found site result [{}]", foundLinkResult);
+				torrentResult.setMessage(String.format("found %d tags.", foundLinkResult.size()));
+				torrentResult.setSuccess(true);
+				torrentResult.setData(foundLinkResult);
+			} catch (ToAppException e) {
 				torrentResult.setSuccess(false);
 				torrentResult.setMessage(e.getMessage());
 			}
@@ -107,69 +89,24 @@ public class SiteController {
 		return torrentResult;
 	}
 	@PatchMapping("detail/check")
-	public @ResponseBody TorrentResult<String> checkDetailSite(@RequestBody @Valid Site.SiteCreate siteCreate, BindingResult result) {
-		TorrentResult<String> torrentResult = new TorrentResult<>();
+	public @ResponseBody TorrentResult<Torrent.TorrentSimpleInfo> checkDetailSite(@RequestBody @Valid Site.SiteCreate siteCreate, BindingResult result) {
+		TorrentResult<Torrent.TorrentSimpleInfo> torrentResult = new TorrentResult<>();
 		log.info("page : [{}]", siteCreate);
 		log.info("result [{}]", result);
 		if (result.hasErrors()) {
 			log.info("errors:" + result);
 			torrentResult.setSuccess(false);
-			torrentResult.setMessage("it's error");
+			torrentResult.setMessage(result.getFieldErrors().stream().map(f -> f.getField() + " : " + f.getDefaultMessage()).collect(Collectors.joining("\n")));
 		} else {
 			try {
-				Site.Create siteC = new Site.Create();
-				siteC.setSiteName(siteCreate.getSiteName());
-				siteC.setPageSelector(siteCreate.getPageSelector());
-				siteC.setSiteKeyword(siteCreate.getSiteKeyword());
-				siteC.setSiteSearchUrl(siteCreate.getTempDetailURL());
-				
-				Site.DetailPage detailPage = new Site.DetailPage();
-				detailPage.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
-				detailPage.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
-				detailPage.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
-				detailPage.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
-				detailPage.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
-				detailPage.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
-				siteService.validationDetailSite(detailPage);
-				String urlString = siteService.getSiteSearchString(siteC);
-				log.info("detail page url is [{}]", urlString);
-				final Map<String, String> foundResult = new HashMap<String, String>();
-				PageConnector pageConnector = new PageConnector(urlString);
-				String torrentName = pageConnector.find(siteCreate.getTorrentNameSelector());
-				String torrentSize = pageConnector.find(siteCreate.getTorrentSizeSelector());
-				String torrentMagnet = pageConnector.find(siteCreate.getTorrentMagnetHashSelector());
-				log.info("founded torrentName : [{}]", torrentName);
-				log.info("founded torrentSize : [{}]", torrentSize);
-				log.info("founded torrentMagnet : [{}]", torrentMagnet);
-				boolean selectValidation = true;
-				selectValidation &= ToAppUtils.isNotEmpty(torrentName);
-				selectValidation &= ToAppUtils.isNotEmpty(torrentSize);
-				selectValidation &= ToAppUtils.isNotEmpty(torrentMagnet);
-				foundResult.put("01.foundTorrentName", ToAppUtils.getString(torrentName, "[NOT FOUND TORRENT NAME]"));
-				foundResult.put("02.foundTorrentSize", ToAppUtils.getString(torrentSize, "[NOT FOUND TORRENT SIZE]"));
-				foundResult.put("03.foundTorrentMagnet", ToAppUtils.getString(torrentMagnet, "[NOT FOUND TORRENT MAGNET]"));
-				if (selectValidation) {
-					// founded all item.
-					if (!ToAppUtils.isEmpty(siteCreate.getTorrentNameReplace())) {
-						String foundTorrentNameReplaced = ToAppUtils.replaceGroup(torrentName, siteCreate.getTorrentNameReplace());
-						log.info("foundTorrentNameReplaced : [{}]", foundTorrentNameReplaced);
-						foundResult.put("01.foundTorrentName", foundTorrentNameReplaced);
-					}
-					if (!ToAppUtils.isEmpty(siteCreate.getTorrentSizeReplace())) {
-						String foundTorrentSizeReplaced = ToAppUtils.replaceGroup(torrentSize, siteCreate.getTorrentSizeReplace());
-						log.info("foundTorrentNameReplaced : [{}]", foundTorrentSizeReplaced);
-						foundResult.put("02.foundTorrentSize", foundTorrentSizeReplaced);
-					}
-					if (!ToAppUtils.isEmpty(siteCreate.getTorrentMagnetHashReplace())) {
-						String foundTorrentMagnetReplaced = ToAppUtils.replaceGroup(torrentMagnet, siteCreate.getTorrentMagnetHashReplace());
-						log.info("foundTorrentMagnetReplaced : [{}]", foundTorrentMagnetReplaced);
-						foundResult.put("03.foundTorrentMagnet", foundTorrentMagnetReplaced);
-					}
+				Torrent.TorrentSimpleInfo torrentSimpleInfo = siteService.findTorrentDetailPageInfo(siteCreate);
+				log.info("founded torrentPage : [{}]", torrentSimpleInfo);
+				if (torrentSimpleInfo != null && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentName()) && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentSize()) && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentMagnet())) {
 					torrentResult.setSuccess(true);
 					torrentResult.setMessage("found item.");
 				}
-				torrentResult.setData(foundResult.entrySet().stream().sorted(Map.Entry.comparingByKey()).map(entry -> entry.getKey() + " - " + entry.getValue()).collect(Collectors.joining("\n")));
-			} catch (IOException | ToAppException e) {
+				torrentResult.setData(torrentSimpleInfo);
+			} catch (ToAppException e) {
 				torrentResult.setSuccess(false);
 				torrentResult.setMessage(e.getMessage());
 			}

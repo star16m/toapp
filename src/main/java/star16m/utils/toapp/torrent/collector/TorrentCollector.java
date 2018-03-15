@@ -8,32 +8,28 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import lombok.extern.slf4j.Slf4j;
+import star16m.utils.toapp.ToAppConstants;
+import star16m.utils.toapp.commons.errors.ToAppException;
 import star16m.utils.toapp.commons.message.MessageRepository;
 import star16m.utils.toapp.commons.message.MessageService;
+import star16m.utils.toapp.commons.page.PageConnector;
 import star16m.utils.toapp.commons.utils.ToAppUtils;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
 import star16m.utils.toapp.site.Site;
 import star16m.utils.toapp.site.SiteRepository;
+import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
 
 @Component
 @Transactional
 @Slf4j
 public class TorrentCollector {
-	private static final String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36";
-	private static final DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyyMMdd");
 	public static DateTime START_DATE_STRING = null;
 	public static final List<String> targetDateString = new ArrayList<String>();
 	@Autowired
@@ -55,14 +51,13 @@ public class TorrentCollector {
 		siteList.stream().forEach(site -> {
 			keywordList.stream().forEach(keyword -> {
 				log.info("##### try collect by site[{}], keyword[{}]", site.getName(), keyword.getKeyword());
-				String result = null;
+				CollectResult result = null;
 				try {
 					result = collect(site, keyword);
 				} catch (Exception e) {
 					log.error("error occured while collect torrent file");
 				}
-				log.info("##### collected [{}]", result);
-				commonService.saveMessage("cron-30", result);
+				commonService.saveMessage("cron-30", result.getResultString());
 			});
 		});
 	}
@@ -90,7 +85,7 @@ public class TorrentCollector {
 		int days = 10;
 		DateTime endDate = new DateTime(new Date());
 		for (int i = 0; i < days; i++) {
-			targetDateString.add(endDate.minusDays(i).toString(formatter));
+			targetDateString.add(endDate.minusDays(i).toString(ToAppConstants.DATE_TIME_FORMATTER));
 		}
 		START_DATE_STRING = endDate.minusDays(days + 1);
 		return days;
@@ -108,9 +103,9 @@ public class TorrentCollector {
 					public void run() {
 						siteList.stream().forEach(site->{
 							try {
-								String collectResult = collect(site, keyword);
-								commonService.saveMessage("col-key", collectResult);
-							} catch (IOException e) {
+								CollectResult result = collect(site, keyword);
+								commonService.saveMessage("col-key", result.getResultString());
+							} catch (ToAppException e) {
 								log.warn(e.getMessage());
 							}
 						});
@@ -120,108 +115,110 @@ public class TorrentCollector {
 		}
 	}
 
-	public String collect(Site site, Keyword keyword) throws IOException {
+	private CollectResult collect(Site site, Keyword keyword) throws ToAppException {
 		if (targetDateString.size() <= 0) {
 			resetTargetDateString();
 		}
-		Document doc = null;
-		int notInTargetDate = 0;
-		int alreadyExists = 0;
-		int success = 0;
+		int alreadyExistsMagnetNum = 0;
+		int foundAndSaveTorrentNum = 0;
 		int totalElementNum = 0;
-		int alreadyExistUrl = 0;
 		try {
-			String url = site.getSearchUrl();
-			if (site.getSearchUrl().contains("[KEYWORD]")) {
-				if (keyword.getKeyword() != null && keyword.getKeyword().length() > 0) {
-					log.info("replace keyword as [{}]", keyword.getKeyword());
-					url = url.replaceAll("\\[KEYWORD\\]", keyword.getKeyword());
-					log.info("url is [{}]", url);
-				}
-			}
-			doc = Jsoup.connect(url).userAgent(USER_AGENT).get();
-			if (doc != null) {
-				Elements elements = doc.select(site.getPageSelector());
-				if (elements == null || elements.size() == 0) {
-					return "[" + keyword.getKeyword() + "] [element not found]";
-				}
-				for (Element e : elements) {
-					if (!e.tagName().equalsIgnoreCase("a")) {
-						log.info("there is not a tag. [{}]", e.tagName());
-						return "[" + keyword.getKeyword() + "] [a tag not found]";
-					}
-				}
-				log.info("try to connect torrent detail page [{}]", elements.size());
-				totalElementNum = elements.size();
-				for (Element element : elements) {
+			String url = getTorrentURL(site.getSearchUrl(), keyword.getKeyword());
+			List<Torrent.TorrentLinkInfo> torrentDetailPageList = findTorrentLinks(url, site.getPageSelector());
+			totalElementNum = torrentDetailPageList.size();
+			log.info("try to connect torrent detail page [{}]", torrentDetailPageList);
+			for (Torrent.TorrentLinkInfo torrentLinkInfo : torrentDetailPageList) {
 
-					String aString = element.text();
-					String tmpDateString = ToAppUtils.replaceGroup(aString, "(\\d{6,8})");
-					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
-						tmpDateString = "20" + tmpDateString;
-						DateTime tmpDate = new DateTime(formatter.parseDateTime(tmpDateString));
-						if (!keyword.isIgnoreDate() && START_DATE_STRING.isAfter(tmpDate)) {
-							return "[" + keyword.getKeyword() + "] before that last day[" + START_DATE_STRING.toString(formatter) + "] collect is skipped.";
-						}
-					}
-					String detailUrl = element.attr("abs:href");
-					if (torrentRepository.existsByUrl(detailUrl)) {
-						log.info("already exists torrent. url[{}]", detailUrl);
-						alreadyExistUrl++;
-						return "[" + keyword.getKeyword() + "] already exists torrent url [" + detailUrl + "]. collect is skipped.";
-					}
-					/*
-					Document itemDoc = null;
-					try {
-						itemDoc = Jsoup.connect(detailUrl).userAgent(USER_AGENT).get();
-						Torrent t = new Torrent();
-						t.setUrl(detailUrl);
-						String torrentName = null;
-						String torrentSize = null;
-						String torrentMagnetHash = null;
-						if (!StringUtils.isEmpty(site.getTorrentNameSelector())) {
-							torrentName = ToAppUtils.replaceGroup(itemDoc.select(site.getTorrentNameSelector()).text(), site.getTorrentNameReplace());
-						}
-						if (!StringUtils.isEmpty(site.getTorrentSizeSelector())) {
-							torrentSize = ToAppUtils.replaceGroup(itemDoc.select(site.getTorrentSizeSelector()).text(), site.getTorrentSizeReplace());
-						}
-						if (!StringUtils.isEmpty(site.getTorrentMagnetHashSelector())) {
-							torrentMagnetHash = ToAppUtils.replaceGroup( itemDoc.select(site.getTorrentMagnetHashSelector()).outerHtml(), site.getTorrentMagnetHashReplace());
-						}
-						t.setTitle(torrentName.substring(0, Math.min(255, torrentName.length())));
-						String dateString = ToAppUtils.replaceGroup(torrentName, "(\\d{6,8})");
-						if (dateString == null || dateString.equals(torrentName) || dateString.length() < 6 || dateString.length() > 8) {
-							dateString = "--------";
-						} else if (dateString != null && dateString.length() == 6 && dateString.startsWith("1")) {
-							dateString = "20" + dateString;
-						}
-						if (!keyword.isIgnoreDate() && !targetDateString.contains(dateString)) {
-							log.warn("{} is not target date[{}]!.", torrentName, dateString);
-							notInTargetDate++;
-							continue;
-						}
-						t.setDateString(dateString);
-						t.setSize(torrentSize);
-						t.setMagnetCode(torrentMagnetHash);
-						t.setSiteName(site.getName());
-						t.setKeyword(keyword.getKeyword());
-						t.setTorrentFindDate(new Date());
-						if (torrentRepository.exists(t.getMagnetCode())) {
-							log.info("already exists torrent[{}]", t);
-							alreadyExists++;
-						} else {
-							torrentRepository.saveAndFlush(t);
-							success++;
-						}
-					} catch (IOException e) {
-					}
-					*/
+				if (torrentLinkInfo.getCreateDate() != null && START_DATE_STRING.isAfter(torrentLinkInfo.getCreateDate())) {
+					return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "torrent's date is after base line");
+				}
+				if (torrentRepository.existsByUrl(torrentLinkInfo.getLinkURL())) {
+					return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "already exists torrent(by url).");
+				}
+				Torrent.TorrentSimpleInfo torrentInfo = findTorrentInfo(torrentLinkInfo.getLinkURL(), site);
+				if (torrentLinkInfo.getCreateDate() != null && !keyword.isIgnoreDate() && !targetDateString.contains(torrentLinkInfo.getCreateDate().toString(ToAppConstants.DATE_TIME_FORMATTER))) {
+					log.info("torrent[" + torrentInfo.toString() + "] is ignored.");
+					continue;
+				}
+				Torrent torrent = new Torrent();
+				torrent.setMagnetCode(torrentInfo.getTorrentMagnet());
+				torrent.setTitle(torrentInfo.getTorrentName());
+				torrent.setUrl(torrentLinkInfo.getLinkURL());
+				torrent.setSize(torrentInfo.getTorrentSize());
+				torrent.setSiteName(site.getName());
+				torrent.setKeyword(keyword.getKeyword());
+				torrent.setDownload(false);
+				torrent.setDateString(torrentLinkInfo.getCreateDate().toString(ToAppConstants.DATE_TIME_FORMATTER));
+				torrent.setTorrentFindDate(new Date());
+				if (torrentRepository.exists(torrent.getMagnetCode())) {
+					alreadyExistsMagnetNum++;
+				} else {
+					torrentRepository.saveAndFlush(torrent);
+					foundAndSaveTorrentNum++;
 				}
 			}
-		} catch (IOException e) {
+		} catch (ToAppException e) {
 			log.error("error occured while collect. site=[{}], keyword=[{}], error=[{}]", site, keyword, e);
 			throw e;
 		}
-		return "Total[" + totalElementNum + "], alreadyExistUrl[" + alreadyExistUrl + ", notInDate[" + notInTargetDate + "], already[" + alreadyExists + "], success[" + success + "]";
+		return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, false, "already exists(by magnet hash) -> " + alreadyExistsMagnetNum);
+	}
+	public String getTorrentURL(String torrentURL, String keywordString) {
+		return ToAppUtils.replace(torrentURL, ToAppConstants.SEARCH_KEYWORD, keywordString);
+	}
+	public List<Torrent.TorrentLinkInfo> findTorrentLinks(String urlString, String torrentDetailPageSelector) throws ToAppException {
+		List<Torrent.TorrentLinkInfo> foundResult = new ArrayList<>();
+		PageConnector pageConnector = null;
+		try {
+			pageConnector = new PageConnector(urlString);
+			pageConnector.find(torrentDetailPageSelector, (e, i) -> {
+				Torrent.TorrentLinkInfo link = new Torrent.TorrentLinkInfo();
+				link.setTitle(e.text());
+				link.setLinkURL(e.attr("abs:href"));
+				if (ToAppUtils.isNotEmpty(link.getTitle())) {
+					String tmpDateString = ToAppUtils.replaceGroup(link.getTitle(), "(\\d{6,8})");
+					if (tmpDateString != null && tmpDateString.length() == 6 && tmpDateString.startsWith("1")) {
+						tmpDateString = "20" + tmpDateString;
+						DateTime tmpDate = new DateTime(ToAppConstants.DATE_TIME_FORMATTER.parseDateTime(tmpDateString));
+						link.setCreateDate(tmpDate);
+					}
+				}
+				foundResult.add(link);
+			});
+		} catch (IOException e) {
+			throw new ToAppException(e);
+		}
+		return foundResult;
+	}
+	
+	public Torrent.TorrentSimpleInfo findTorrentInfo(String torrentURLString, Site site) throws ToAppException {
+		PageConnector pageConnector = null;
+		try {
+			log.info("try to url [{}]", torrentURLString);
+			pageConnector = new PageConnector(torrentURLString);
+			Torrent.TorrentSimpleInfo torrentPageInfo = new Torrent.TorrentSimpleInfo();
+			String torrentName = pageConnector.find(site.getTorrentNameSelector());
+			String torrentSize = pageConnector.find(site.getTorrentSizeSelector());
+			String torrentMagnet = pageConnector.find(site.getTorrentMagnetHashSelector());
+			log.info("founded torrentName[{}], torrentSize[{}], torrentMagnet[{}]", torrentName, torrentSize, torrentMagnet);
+			if (ToAppUtils.isNotEmpty(torrentName) && ToAppUtils.isNotEmpty(site.getTorrentNameReplace())) {
+				torrentName = ToAppUtils.replaceGroup(torrentName, site.getTorrentNameReplace());
+				log.info("replaced torrentName[{}]", torrentName);
+			}
+			if (ToAppUtils.isNotEmpty(torrentSize) && ToAppUtils.isNotEmpty(site.getTorrentSizeReplace())) {
+				torrentSize = ToAppUtils.replaceGroup(torrentSize, site.getTorrentSizeReplace());
+				log.info("replaced torrentSize[{}]", torrentSize);
+			}
+			if (ToAppUtils.isNotEmpty(torrentMagnet) && ToAppUtils.isNotEmpty(site.getTorrentMagnetHashReplace())) {
+				torrentMagnet = ToAppUtils.replaceGroup(torrentMagnet, site.getTorrentMagnetHashReplace());
+				log.info("replaced torrentMagnet[{}]", torrentMagnet);
+			}
+			torrentPageInfo.setTorrentName(torrentName);
+			torrentPageInfo.setTorrentSize(torrentSize);
+			torrentPageInfo.setTorrentMagnet(torrentMagnet);
+			return torrentPageInfo;
+		} catch (IOException e) {
+			throw new ToAppException(e);
+		}
 	}
 }
