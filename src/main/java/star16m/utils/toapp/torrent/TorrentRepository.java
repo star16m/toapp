@@ -7,17 +7,23 @@ import javax.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 
-public interface TorrentRepository extends JpaRepository<Torrent, String>{
-	public List<Torrent> findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
-	@Modifying
-	@Transactional
-	public void deleteByKeyword(String keyword);
-	public List<Torrent> findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(String keyword);
-	public boolean existsByUrl(String detailUrl);
-	public List<Torrent> findTorrentByDownload(boolean download);
-	public List<Torrent> findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(List<String> targetDateStringList);
-	@Transactional
-	public void deleteByDateStringNotIn(List<String> targetDateStringList);
-	
-	public Long countByDateStringIn(List<String> targetDateStringList);
+public interface TorrentRepository extends JpaRepository<Torrent, String> {
+    List<Torrent> findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
+
+    @Modifying
+    @Transactional
+    void deleteByKeyword(String keyword);
+
+    List<Torrent> findTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(String keyword);
+
+    boolean existsByUrl(String detailUrl);
+
+    List<Torrent> findTorrentByDownload(boolean download);
+
+    List<Torrent> findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(List<String> targetDateStringList);
+
+    @Transactional
+    void deleteByDateStringNotIn(List<String> targetDateStringList);
+
+    Long countByDateStringIn(List<String> targetDateStringList);
 }

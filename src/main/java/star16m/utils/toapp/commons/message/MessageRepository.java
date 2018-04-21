@@ -6,7 +6,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
-	public List<Message> findTop10ByOrderByCreateDateDesc();
-	public List<Message> findMessageByOrderByCreateDateDesc();
-	public void deleteByCreateDateLessThan(Date targetDate);
+	List<Message> findTop10ByOrderByCreateDateDesc();
+	List<Message> findMessageByOrderByCreateDateDesc();
+	void deleteByCreateDateLessThan(Date targetDate);
 }
