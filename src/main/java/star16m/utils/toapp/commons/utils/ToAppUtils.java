@@ -4,6 +4,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
+import star16m.utils.toapp.ToAppConstants;
 
 public class ToAppUtils {
     private ToAppUtils() {
@@ -37,5 +41,27 @@ public class ToAppUtils {
     public static String replace(String orgString, String searchString, String replaceString) {
     	return StringUtils.replace(orgString, searchString, replaceString);
     }
-    
+    public static DateTime getDateTime(String orgString) {
+    	if (isEmpty(orgString)) {
+    		return null;
+    	}
+    	DateTime dateTime = null;
+    	if (orgString.matches("\\d{6,8}")) {
+    		String tmpString = replaceGroup(orgString, "(\\d{6,8})");
+    		if (tmpString.length() == 6) {
+    			tmpString = "20" + tmpString;
+    		}
+    		dateTime = new DateTime(ToAppConstants.DATE_TIME_FORMATTER.parseDateTime(tmpString));
+    	} else if (orgString.matches("\\d{4}\\.\\d{1,2}\\.\\d{1,2}")) {
+    		dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(replaceGroup(orgString, "(\\d{4}\\.\\d{1,2}\\.\\d{1,2})")));
+    	} else if (orgString.matches("\\d{2}/\\d{2}")) {
+    		String tmpString = replaceGroup(orgString, "(\\d{2}/\\d{2})");
+    		dateTime = new DateTime(DateTimeFormat.forPattern("MM/dd").parseDateTime(tmpString));
+    	} else if (orgString.matches("\\d{2}\\.\\d{2}")) {
+    		dateTime = new DateTime(DateTimeFormat.forPattern("MM.dd").parseDateTime(replaceGroup(orgString, "(\\d{2}\\.\\d{2})")));
+    	} else if (orgString.matches("오늘")) {
+    		dateTime = new DateTime();
+    	}
+    	return dateTime;
+    }
 }

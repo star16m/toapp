@@ -34,6 +34,15 @@ public class Site {
 	@NotNull
 	@Size(min = 4, max = 255)
 	private String pageSelector;
+	@NotNull
+	@Size(min = 4, max = 255)
+	private String nameSelector;
+	@NotNull
+	@Size(min = 4, max = 255)
+	private String sizeSelector;
+	@NotNull
+	@Size(min = 4, max = 255)
+	private String dateSelector;
 	@Column(insertable = false, columnDefinition = "tinyint(1) default 1")
 	private boolean useable = true;
 	@NotNull
@@ -61,6 +70,15 @@ public class Site {
 		@Size(min = 4, max = 255)
 		private String pageSelector;
 		private String siteKeyword;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String nameSelector;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String sizeSelector;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String dateSelector;
 	}
 	@Getter
 	@Setter
@@ -78,6 +96,15 @@ public class Site {
 		private String pageSelector;
 		private String siteKeyword;
 		private String torrentDetailPageURL;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String nameSelector;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String sizeSelector;
+		@NotNull
+		@Size(min = 4, max = 255)
+		private String dateSelector;
 		@NotNull
 		private String torrentNameSelector;
 		private String torrentNameReplace;

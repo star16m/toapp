@@ -62,6 +62,9 @@ public class Torrent {
 		private String title;
 		@NotEmpty
 		private String linkURL;
+		@NotEmpty
+		private String size;
+		@NotEmpty
 		private DateTime createDate;
 	}
 	@Getter

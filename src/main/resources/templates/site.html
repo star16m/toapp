@@ -134,6 +134,14 @@
                                         <input class="form-control site_form_element" id="siteSearchUrl" placeholder="[KEYWORD] 를 포함한 search url" th:field="*{siteSearchUrl}" />
                                         <span th:if="${#fields.hasErrors('siteSearchUrl')}" th:errors="*{siteSearchUrl}" class="help-block">error!</span>
                                     </div>
+									<div class="form-group">
+										<label class="control-label" for="nameSelector">Name-Selector</label>
+										<input class="form-control site_form_element" id="nameSelector" placeholder="name-Selector" />
+									</div>
+									<div class="form-group">
+										<label class="control-label" for="sizeSelector">Size-Selector</label>
+										<input class="form-control site_form_element" id="sizeSelector" placeholder="Size-Selector" />
+									</div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="form-group" th:classappend="${#fields.hasErrors('siteKeyword')}? 'has-error'">
@@ -146,13 +154,17 @@
                                         <input class="form-control site_form_element" id="pageSelector" placeholder="a tag를 리스트업 하는 selector" th:field="*{pageSelector}" />
                                         <span th:if="${#fields.hasErrors('pageSelector')}" th:errors="*{pageSelector}" class="help-block">error!</span>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="control-label" for="dateSelector">일자-Selector</label>
+                                        <input class="form-control site_form_element" id="dateSelector" placeholder="일자-Selector" />
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="form-group">
                                         <label>리스트 페이지</label>
-                                        <textarea class="form-control siteresult" rows="2" disabled="disabled" th:utext="${siteResult}"></textarea>
+                                        <textarea class="form-control siteresult" rows="5" disabled="disabled" th:utext="${siteResult}"></textarea>
                                     </div>
                                     <div class="form-group">
                                         <button type="submit" class="btn btn-primary btn-lg">check</button>
@@ -234,11 +246,13 @@
                 $('.site_form_element').each(function(index, item) {
                 	var n = $(item).attr('id');
                 	checkForm[n] = $(item).val();
-                	if (!checkForm[n]) {
-                		alert("please type value.");
-                		$(item).focus();
-                		validInfo = false;
-                		return false;
+                	if (!$(this).hasClass("option_element")) {
+	                	if (!checkForm[n]) {
+	                		alert("please type value.");
+	                		$(item).focus();
+	                		validInfo = false;
+	                		return false;
+	                	}
                 	}
                 });
                 if (!validInfo) {
@@ -257,7 +271,7 @@
                     success: function (result) {
                         // $('textarea.siteresult').text(result.message + (result.success ? "\nDETAIL PAGE [" + result.data.detailPageURL + "]" : ""));
                         $("div.detailrow").data("detailinfo", result.data);
-                        $('textarea.siteresult').text(result.message);
+                        $('textarea.siteresult').text(result.message + "\n" + JSON.stringify(result.data));
                         if (result.success) {
                             $('div.detailrow').show();
                         } else {
@@ -326,11 +340,13 @@
                 $('.site_form_element').each(function(index, item) {
                 	var n = $(item).attr('id');
                 	checkForm[n] = $(item).val();
-                	if (!checkForm[n]) {
-                		alert("please type value.");
-                		$(item).focus();
-                		validInfo = false;
-                		return false;
+                	if (!$(this).hasClass("option_element")) {
+	                	if (!checkForm[n]) {
+	                		alert("please type value.");
+	                		$(item).focus();
+	                		validInfo = false;
+	                		return false;
+	                	}
                 	}
                 });
                 

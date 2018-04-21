@@ -22,8 +22,13 @@ public class SiteService {
 		if (siteInfo == null || siteInfo.getSiteSearchUrl() == null || siteInfo.getSiteKeyword() == null || siteInfo.getPageSelector() == null) {
 			throw new ToAppException("Not found site info.");
 		}
-		String urlString = this.torrentCollector.getTorrentURL(siteInfo.getSiteSearchUrl(), siteInfo.getSiteKeyword());
-		List<Torrent.TorrentLinkInfo> foundResult = this.torrentCollector.findTorrentLinks(urlString, siteInfo.getPageSelector());
+		Site site = new Site();
+		site.setSearchUrl(this.torrentCollector.getTorrentURL(siteInfo.getSiteSearchUrl(), siteInfo.getSiteKeyword()));
+		site.setPageSelector(siteInfo.getPageSelector());
+		site.setNameSelector(siteInfo.getNameSelector());
+		site.setSizeSelector(siteInfo.getSizeSelector());
+		site.setDateSelector(siteInfo.getDateSelector());
+		List<Torrent.TorrentLinkInfo> foundResult = this.torrentCollector.findTorrentLinks(site, siteInfo.getSiteKeyword());
 		return foundResult;
 	}
 	public Torrent.TorrentSimpleInfo findTorrentDetailPageInfo(Site.SiteCreate siteCreate) throws ToAppException {

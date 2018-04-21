@@ -75,7 +75,7 @@ public class SiteController {
 			torrentResult.setMessage(result.getFieldErrors().stream().map(f -> f.getField() + " : " + f.getDefaultMessage()).collect(Collectors.joining("\n")));
 		} else {
 			try {
-				log.info("try check site url info [{}]", siteInfo.getSiteSearchUrl());
+				log.info("try check site url info [{}]", siteInfo);
 				List<Torrent.TorrentLinkInfo> foundLinkResult = siteService.findDetailPageElement(siteInfo);
 				log.info("found site result [{}]", foundLinkResult);
 				torrentResult.setMessage(String.format("found %d tags.", foundLinkResult.size()));
@@ -123,6 +123,9 @@ public class SiteController {
 			site.setName(siteCreate.getSiteName());
 			site.setSearchUrl(siteCreate.getSiteSearchUrl());
 			site.setPageSelector(siteCreate.getPageSelector());
+			site.setNameSelector(siteCreate.getNameSelector());
+			site.setSizeSelector(siteCreate.getSizeSelector());
+			site.setDateSelector(siteCreate.getDateSelector());
 			site.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
 			site.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
 			site.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
