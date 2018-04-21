@@ -44,5 +44,4 @@ public class SiteService {
 		Torrent.TorrentSimpleInfo torrentInfo = this.torrentCollector.findTorrentInfo(urlString, tmpSite);
 		return torrentInfo;
 	}
-	
 }
