@@ -53,6 +53,7 @@ public class ToAppUtils {
         if (isEmpty(orgString)) {
             return null;
         }
+        DateTime today = new DateTime();
         DateTime dateTime = null;
         if (orgString.matches("\\d{6,8}")) {
             String tmpString = replaceGroup(orgString, "(\\d{6,8})");
@@ -64,9 +65,9 @@ public class ToAppUtils {
             dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(replaceGroup(orgString, "(\\d{4}\\.\\d{1,2}\\.\\d{1,2})")));
         } else if (orgString.matches("\\d{2}/\\d{2}")) {
             String tmpString = replaceGroup(orgString, "(\\d{2}/\\d{2})");
-            dateTime = new DateTime(DateTimeFormat.forPattern("MM/dd").parseDateTime(tmpString));
+            dateTime = DateTimeFormat.forPattern("yyyy/MM/dd").parseDateTime(today.getYear() + "/" + tmpString);
         } else if (orgString.matches("\\d{2}\\.\\d{2}")) {
-            dateTime = new DateTime(DateTimeFormat.forPattern("MM.dd").parseDateTime(replaceGroup(orgString, "(\\d{2}\\.\\d{2})")));
+            dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(today.getYear() + "." + replaceGroup(orgString, "(\\d{2}\\.\\d{2})")));
         } else if (orgString.matches("오늘")) {
             dateTime = new DateTime();
         }
