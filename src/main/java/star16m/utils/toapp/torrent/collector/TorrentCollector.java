@@ -8,6 +8,7 @@ import java.util.List;
 import javax.transaction.Transactional;
 
 import org.joda.time.DateTime;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -178,13 +179,17 @@ public class TorrentCollector {
             PageConnector pageConnector = new PageConnector(url);
             pageConnector.find(site.getPageSelector(), (e, i) -> {
                 Torrent.TorrentLinkInfo link = new Torrent.TorrentLinkInfo();
-                link.setTitle(e.select(site.getNameSelector()).text());
-                link.setLinkURL(e.select(site.getNameSelector()).select("a").attr("abs:href"));
-                String size = e.select(site.getSizeSelector()).first().text();
-                link.setSize(size);
-                String date = e.select(site.getDateSelector()).first().text();
-                link.setCreateDate(ToAppUtils.getDateTime(date));
-                foundResult.add(link);
+                String title = e.select(site.getNameSelector()).text();
+                Elements linkElement = e.select(site.getNameSelector());
+                Elements sizeElement = e.select(site.getSizeSelector());
+                Elements dateElement = e.select(site.getDateSelector());
+                if (ToAppUtils.isNotEmpty(title) && linkElement != null && linkElement.select("a") != null && sizeElement != null && sizeElement.first() != null && dateElement != null && dateElement.first() != null) {
+                    link.setTitle(title);
+                    link.setLinkURL(linkElement.select("a").attr("abs:href"));
+                    link.setSize(sizeElement.first().text());
+                    link.setCreateDate(ToAppUtils.getDateTime(dateElement.first().text()));
+                    foundResult.add(link);
+                }
             });
         } catch (IOException e) {
             throw new ToAppException(e);
