@@ -22,6 +22,8 @@ import lombok.Setter;
 import star16m.utils.toapp.torrent.Torrent;
 import star16m.utils.toapp.torrent.TorrentRepository;
 
+import static java.util.stream.Collectors.toList;
+
 @Component
 @Getter
 @Setter
@@ -45,11 +47,7 @@ public class TorrentFeedView extends AbstractRssFeedView {
 	protected List<Item> buildFeedItems(Map<String, Object> model, HttpServletRequest request,
 			HttpServletResponse response) throws Exception {
 		List<Torrent> torrentList = torrentRepository.findTorrentByDownload(true);
-		List<Item> torrentList2 = new ArrayList<Item>();
-		for (Torrent torrent : torrentList) {
-			torrentList2.add(this.createItem(torrent));
-		}
-		return torrentList2;
+		return torrentList.stream().map(e->this.createItem(e)).collect(toList());
 	}
 
 	private Item createItem(Torrent torrent) {
