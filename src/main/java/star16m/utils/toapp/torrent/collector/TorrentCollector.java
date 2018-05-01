@@ -96,25 +96,23 @@ public class TorrentCollector {
     public void collect(String keywordString) {
         log.info("try to collect by keyword [{}]", keywordString);
         final Keyword keyword = keywordRepository.findByKeyword(keywordString);
-        keyword.setIgnoreDate(true);
-        log.info("found keyword [{}]", keyword);
-        if (keyword != null) {
-            final List<Site> siteList = siteRepository.findByUseableTrue();
-            if (siteList != null && siteList.size() > 0) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        siteList.stream().forEach(site -> {
-                            try {
-                                CollectResult result = collect(site, keyword);
-                                commonService.saveMessage("col-key", result.getResultString());
-                            } catch (ToAppException e) {
-                                log.warn(e.getMessage());
-                            }
-                        });
-                    }
-                }).start();
-            }
+        final Keyword searchKeyword = new Keyword(keyword.getId(), keyword.getKeyword(), true);
+        log.info("found keyword [{}]", searchKeyword);
+        final List<Site> siteList = siteRepository.findByUseableTrue();
+        if (siteList != null && siteList.size() > 0) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    siteList.stream().forEach(site -> {
+                        try {
+                            CollectResult result = collect(site, searchKeyword);
+                            commonService.saveMessage("col-key", result.getResultString());
+                        } catch (ToAppException e) {
+                            log.warn(e.getMessage());
+                        }
+                    });
+                }
+            }).start();
         }
     }
 

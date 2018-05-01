@@ -43,7 +43,7 @@ public class TorrentController {
 			List<String> lastDaysList = TorrentCollector.getTargetLastDays(lastDays);
 			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(lastDaysList);
 		} else if (targetDate != null && targetDate > 0) {
-			List<String> targetDateList = new ArrayList<String>();
+			List<String> targetDateList = new ArrayList<>();
 			targetDateList.add(String.valueOf(targetDate));
 			torrentList = torrentRepository.findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(targetDateList);
 		} else if (torrentName != null && torrentName.length() > 0) {
