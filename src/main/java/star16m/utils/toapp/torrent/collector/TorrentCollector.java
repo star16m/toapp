@@ -129,7 +129,7 @@ public class TorrentCollector {
             log.info("try to connect torrent detail page [{}]", torrentDetailPageList);
             for (Torrent.TorrentLinkInfo torrentLinkInfo : torrentDetailPageList) {
 
-                if (torrentLinkInfo.getCreateDate() != null && START_DATE_STRING.isAfter(torrentLinkInfo.getCreateDate())) {
+                if (!keyword.isIgnoreDate() && torrentLinkInfo.getCreateDate() != null && START_DATE_STRING.isAfter(torrentLinkInfo.getCreateDate())) {
 //					return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "torrent's date(" + torrentLinkInfo.getCreateDate() + ") is after base line(" + START_DATE_STRING + ")");
                     continue;
                 }
