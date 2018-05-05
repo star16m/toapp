@@ -137,7 +137,13 @@ public class TorrentCollector {
                     // return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "already exists torrent(by url).");
                 	continue;
                 }
-                Torrent.TorrentSimpleInfo torrentInfo = findTorrentInfo(torrentLinkInfo.getLinkURL(), site);
+                Torrent.TorrentSimpleInfo torrentInfo = null;
+                try {
+                	torrentInfo = findTorrentInfo(torrentLinkInfo.getLinkURL(), site);
+                } catch (ToAppException e) {
+                	// ignore exception.
+                	continue;
+                }
                 if (!keyword.isIgnoreDate() && !targetDateString.contains(torrentLinkInfo.getCreateDate().toString(ToAppConstants.DATE_TIME_FORMATTER))) {
                     log.info("torrent[" + torrentInfo.toString() + "] is ignored.");
                     continue;
