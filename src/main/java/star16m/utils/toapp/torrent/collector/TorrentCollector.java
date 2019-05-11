@@ -188,7 +188,13 @@ public class TorrentCollector {
                 Elements linkElement = e.select(site.getNameSelector());
                 Elements sizeElement = e.select(site.getSizeSelector());
                 Elements dateElement = e.select(site.getDateSelector());
-                if (ToAppUtils.isNotEmpty(title) && linkElement != null && linkElement.select("a") != null && sizeElement != null && sizeElement.first() != null && dateElement != null && dateElement.first() != null) {
+                if (ToAppUtils.isNotEmpty(title)
+                        && linkElement != null
+                        && linkElement.select("a") != null
+                        && sizeElement != null
+                        && sizeElement.first() != null
+                        && dateElement != null
+                        && dateElement.first() != null) {
                     link.setTitle(title);
                     link.setLinkURL(linkElement.select("a").attr("abs:href"));
                     link.setSize(sizeElement.first().text());

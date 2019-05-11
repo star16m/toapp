@@ -67,6 +67,8 @@ public class ToAppUtils {
             dateTime = DateTimeFormat.forPattern("yyyy/MM/dd").parseDateTime(today.getYear() + "/" + tmpString);
         } else if (orgString.matches("\\d{2}\\.\\d{2}")) {
             dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(today.getYear() + "." + replaceGroup(orgString, "(\\d{2}\\.\\d{2})")));
+        } else if (orgString.matches("\\d{2}\\-\\d{2}")) {
+            dateTime = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(today.getYear() + "-" + replaceGroup(orgString, "(\\d{2}\\-\\d{2})")));
         } else if (orgString.matches("오늘")) {
             dateTime = new DateTime();
         }

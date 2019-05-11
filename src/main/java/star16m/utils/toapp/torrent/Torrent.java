@@ -3,6 +3,7 @@ package star16m.utils.toapp.torrent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -66,6 +67,13 @@ public class Torrent {
 		private String size;
 		@NotEmpty
 		private DateTime createDate;
+	}
+	@Getter
+	@Setter
+	@ToString
+	public static class TorrentLinkCreateInfo {
+		List<String> message;
+		List<TorrentLinkInfo> torrentLinkInfoList;
 	}
 	@Getter
 	@Setter
