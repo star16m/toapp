@@ -17,6 +17,8 @@ public class SiteService {
 
 	@Autowired
 	private TorrentCollector torrentCollector;
+	@Autowired
+	private SiteRepository siteRepository;
 
 	public List<Torrent.TorrentLinkInfo> findDetailPageElement(Site.SiteInfo siteInfo) throws ToAppException {
 		if (siteInfo == null || siteInfo.getSiteSearchUrl() == null || siteInfo.getSiteKeyword() == null || siteInfo.getPageSelector() == null) {
@@ -43,5 +45,9 @@ public class SiteService {
 		
 		Torrent.TorrentSimpleInfo torrentInfo = this.torrentCollector.findTorrentInfo(urlString, tmpSite);
 		return torrentInfo;
+	}
+
+	public List<Site> findAll() {
+		return this.siteRepository.findAll();
 	}
 }

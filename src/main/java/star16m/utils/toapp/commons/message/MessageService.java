@@ -1,6 +1,7 @@
 package star16m.utils.toapp.commons.message;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -20,4 +21,8 @@ public class MessageService {
 		msg.setCreateDate(new Date());
 		return messageRepository.save(msg);
 	}
+
+    public List<Message> findAll() {
+		return this.messageRepository.findAll();
+    }
 }
