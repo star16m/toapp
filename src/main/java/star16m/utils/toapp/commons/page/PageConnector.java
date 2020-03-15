@@ -37,4 +37,8 @@ public class PageConnector {
 		}
 		return elements.size();
 	}
+
+	public String getElementsString() {
+		return this.document.toString();
+	}
 }

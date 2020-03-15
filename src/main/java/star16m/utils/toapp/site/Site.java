@@ -20,7 +20,7 @@ import lombok.ToString;
 @ToString
 public class Site {
 
-	private static final String URL_PATTERN = "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;\\[\\]]*[-a-zA-Z0-9+&@#/%=~_|\\[\\]]";
+	public static final String SITE_URL_PATTERN = "^(https?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;\\[\\]]*[-a-zA-Z0-9+&@#/%=~_|\\[\\]]";
 	@Id
 	@GeneratedValue
 	private Long id;
@@ -29,7 +29,7 @@ public class Site {
 	private String name;
 	@NotNull
 	@Size(min = 10, max = 255)
-	@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
+	@Pattern(regexp = SITE_URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
 	private String searchUrl;
 	@NotNull
 	@Size(min = 4, max = 255)
@@ -64,7 +64,7 @@ public class Site {
 		private String siteName;
 		@NotEmpty
 		@Size(min = 10, max = 255)
-		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
+		@Pattern(regexp = SITE_URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
 		private String siteSearchUrl;
 		@NotEmpty
 		@Size(min = 4, max = 255)
@@ -89,7 +89,7 @@ public class Site {
 		private String siteName;
 		@NotEmpty
 		@Size(min = 10, max = 255)
-		@Pattern(regexp = URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
+		@Pattern(regexp = SITE_URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
 		private String siteSearchUrl;
 		@NotEmpty
 		@Size(min = 4, max = 255)

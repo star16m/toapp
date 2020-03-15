@@ -44,6 +44,8 @@ public class TorrentCollector {
     @Autowired
     private MessageRepository messageRepository;
 
+    private PageConnector tempDownloadedPage;
+
     @Scheduled(initialDelay = 1 * 60 * 1000, fixedDelay = 30 * 60 * 1000)
     public void collect() {
         List<Site> siteList = siteRepository.findByUseableTrue();
@@ -237,5 +239,20 @@ public class TorrentCollector {
         } catch (IOException e) {
             throw new ToAppException(e);
         }
+    }
+
+    public void clearDownloadedTorrentSite() {
+        this.tempDownloadedPage = null;
+    }
+    public String downloadTorrentSite(String url, String keyword) throws IOException {
+        PageConnector pageConnector = new PageConnector(this.getTorrentURL(url, keyword));
+        this.tempDownloadedPage = pageConnector;
+        return this.tempDownloadedPage.getElementsString();
+    }
+    public String findTempSite(String cssQuery) {
+        if (ToAppUtils.isEmpty(cssQuery)) {
+            return this.tempDownloadedPage.getElementsString();
+        }
+        return this.tempDownloadedPage.find(cssQuery);
     }
 }

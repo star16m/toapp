@@ -19,6 +19,8 @@ public class SiteService {
 	private TorrentCollector torrentCollector;
 	@Autowired
 	private SiteRepository siteRepository;
+	@Autowired
+	private TempSiteRepository tempSiteRepository;
 
 	public List<Torrent.TorrentLinkInfo> findDetailPageElement(Site.SiteInfo siteInfo) throws ToAppException {
 		if (siteInfo == null || siteInfo.getSiteSearchUrl() == null || siteInfo.getSiteKeyword() == null || siteInfo.getPageSelector() == null) {
@@ -47,7 +49,19 @@ public class SiteService {
 		return torrentInfo;
 	}
 
-	public List<Site> findAll() {
-		return this.siteRepository.findAll();
+	public TempSite getTempSiteById(Long siteId) {
+		return this.tempSiteRepository.findOne(siteId);
+	}
+	public List<TempSite> findAll() {
+		return this.tempSiteRepository.findAll();
+	}
+
+    public TempSite createTempSite(TempSite site) {
+		TempSite tempSite = this.tempSiteRepository.save(site);
+		return tempSite;
+    }
+
+	public void deleteTempSite(Long siteId) {
+		this.tempSiteRepository.delete(siteId);
 	}
 }
