@@ -31,27 +31,16 @@ public class Site {
 	@Size(min = 10, max = 255)
 	@Pattern(regexp = SITE_URL_PATTERN, message = "URL의 바른 형식이 아닙니다.")
 	private String searchUrl;
-	@NotNull
-	@Size(min = 4, max = 255)
 	private String pageSelector;
-	@NotNull
-	@Size(min = 4, max = 255)
 	private String nameSelector;
-	@NotNull
-	@Size(min = 4, max = 255)
 	private String sizeSelector;
-	@NotNull
-	@Size(min = 4, max = 255)
 	private String dateSelector;
 	@Column(insertable = false, columnDefinition = "tinyint(1) default 1")
 	private boolean useable = true;
-	@NotNull
 	private String torrentNameSelector;
 	private String torrentNameReplace;
-	@NotNull
 	private String torrentSizeSelector;
 	private String torrentSizeReplace;
-	@NotNull
 	private String torrentMagnetHashSelector;
 	private String torrentMagnetHashReplace;
 
@@ -114,5 +103,13 @@ public class Site {
 		@NotNull
 		private String torrentMagnetHashSelector;
 		private String torrentMagnetHashReplace;
+	}
+
+	@Getter
+	@Setter
+	@ToString
+	public static class SimpleSiteRequest<T> {
+		private Long id;
+		private T request;
 	}
 }

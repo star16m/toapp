@@ -88,31 +88,6 @@ public class SiteController {
 		}
 		return torrentResult;
 	}
-	@PatchMapping("detail/check")
-	public @ResponseBody TorrentResult<Torrent.TorrentSimpleInfo> checkDetailSite(@RequestBody @Valid Site.SiteCreate siteCreate, BindingResult result) {
-		TorrentResult<Torrent.TorrentSimpleInfo> torrentResult = new TorrentResult<>();
-		log.info("page : [{}]", siteCreate);
-		log.info("result [{}]", result);
-		if (result.hasErrors()) {
-			log.info("errors:" + result);
-			torrentResult.setSuccess(false);
-			torrentResult.setMessage(result.getFieldErrors().stream().map(f -> f.getField() + " : " + f.getDefaultMessage()).collect(Collectors.joining("\n")));
-		} else {
-			try {
-				Torrent.TorrentSimpleInfo torrentSimpleInfo = siteService.findTorrentDetailPageInfo(siteCreate);
-				log.info("founded torrentPage : [{}]", torrentSimpleInfo);
-				if (torrentSimpleInfo != null && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentName()) && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentSize()) && ToAppUtils.isNotEmpty(torrentSimpleInfo.getTorrentMagnet())) {
-					torrentResult.setSuccess(true);
-					torrentResult.setMessage("found item.");
-				}
-				torrentResult.setData(torrentSimpleInfo);
-			} catch (ToAppException e) {
-				torrentResult.setSuccess(false);
-				torrentResult.setMessage(e.getMessage());
-			}
-		}
-		return torrentResult;
-	}
 	@PostMapping
 	public @ResponseBody TorrentResult<Site> createTorrentSite(@RequestBody Site.SiteCreate siteCreate, BindingResult result) {
 		log.info("try createTorrentsite:::" + siteCreate);

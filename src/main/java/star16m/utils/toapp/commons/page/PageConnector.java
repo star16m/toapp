@@ -8,6 +8,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import org.springframework.data.util.Pair;
 import star16m.utils.toapp.ToAppConstants;
 
 public class PageConnector {
@@ -21,6 +22,13 @@ public class PageConnector {
 	private Elements select(String cssQuery) {
 		Elements elements = document.select(cssQuery);
 		return elements;
+	}
+	public Pair<String, Integer> findWithCountNum(String cssQuery) {
+		Elements elements = select(cssQuery);
+		if (elements != null) {
+			return Pair.of(elements.toString(), elements.size());
+		}
+		return null;
 	}
 	public String find(String cssQuery) {
 		Elements elements = select(cssQuery);

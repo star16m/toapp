@@ -1,5 +1,7 @@
 package star16m.utils.toapp.feed;
 
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -57,7 +59,7 @@ public class TorrentFeedView extends AbstractRssFeedView {
 				+ "&tr=udp://tracker.openbittorrent.com:80&tr=http://megapeer.org:6969/announce&tr=http://mgtracker.org:2710/announce&tr=http://tracker.files.fm:6969/announce&tr=http://tracker.flashtorrents.org:6969/announce&tr=http://tracker.mg64.net:6881/announce&tr=http://tracker.nwps.ws:6969/announce&tr=http://tracker.ohys.net/announce&tr=http://tracker.tfile.me/announce&tr=udp://9.rarbg.com:2710/announce&tr=udp://9.rarbg.me:2710/announce&tr=udp://coppersurfer.tk:6969/announce&tr=udp://tracker.coppersurfer.tk:6969&tr=udp://tracker.leechers-paradise.org:6969&tr=udp://exodus.desync.com:6969/announce&tr=udp://open.coppersurfer.com:1337/announce");
 		item.setTitle(torrent.getTitle());
 		item.setDescription(createDescription(torrent));
-		item.setPubDate(torrent.getDownloadDate());
+		item.setPubDate(Date.from(torrent.getDownloadDate().atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()));
 		return item;
 	}
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TempSiteDetail {
-    private String pageSelector;
+public class TempSiteDetailRequest {
+    private Site site;
+    private String detailPageUrl;
 }

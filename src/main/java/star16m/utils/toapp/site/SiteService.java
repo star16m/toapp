@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +20,6 @@ public class SiteService {
 	private TorrentCollector torrentCollector;
 	@Autowired
 	private SiteRepository siteRepository;
-	@Autowired
-	private TempSiteRepository tempSiteRepository;
 
 	public List<Torrent.TorrentLinkInfo> findDetailPageElement(Site.SiteInfo siteInfo) throws ToAppException {
 		if (siteInfo == null || siteInfo.getSiteSearchUrl() == null || siteInfo.getSiteKeyword() == null || siteInfo.getPageSelector() == null) {
@@ -35,33 +34,35 @@ public class SiteService {
 		List<Torrent.TorrentLinkInfo> foundResult = this.torrentCollector.findTorrentLinks(site, siteInfo.getSiteKeyword());
 		return foundResult;
 	}
-	public Torrent.TorrentSimpleInfo findTorrentDetailPageInfo(Site.SiteCreate siteCreate) throws ToAppException {
-		String urlString = this.torrentCollector.getTorrentURL(siteCreate.getTorrentDetailPageURL(), siteCreate.getSiteKeyword());
-		Site tmpSite = new Site();
-		tmpSite.setTorrentNameSelector(siteCreate.getTorrentNameSelector());
-		tmpSite.setTorrentNameReplace(siteCreate.getTorrentNameReplace());
-		tmpSite.setTorrentSizeSelector(siteCreate.getTorrentSizeSelector());
-		tmpSite.setTorrentSizeReplace(siteCreate.getTorrentSizeReplace());
-		tmpSite.setTorrentMagnetHashSelector(siteCreate.getTorrentMagnetHashSelector());
-		tmpSite.setTorrentMagnetHashReplace(siteCreate.getTorrentMagnetHashReplace());
-		
-		Torrent.TorrentSimpleInfo torrentInfo = this.torrentCollector.findTorrentInfo(urlString, tmpSite);
-		return torrentInfo;
+	public Site getSiteById(Long siteId) {
+		return this.siteRepository.findById(siteId);
+	}
+	public List<Site> findAll() {
+		return this.siteRepository.findByOrderByIdAsc();
 	}
 
-	public TempSite getTempSiteById(Long siteId) {
-		return this.tempSiteRepository.findOne(siteId);
-	}
-	public List<TempSite> findAll() {
-		return this.tempSiteRepository.findAll();
-	}
-
-    public TempSite createTempSite(TempSite site) {
-		TempSite tempSite = this.tempSiteRepository.save(site);
-		return tempSite;
+    public Site createTempSite(Site site) {
+		return this.siteRepository.save(site);
     }
 
 	public void deleteTempSite(Long siteId) {
-		this.tempSiteRepository.delete(siteId);
+		this.siteRepository.delete(siteId);
+	}
+
+	public Site save(Site realSite) {
+		return this.siteRepository.save(realSite);
+	}
+
+	public Site copySiteBySiteId(Long siteId) {
+		Site site = this.siteRepository.findById(siteId);
+		if (site == null) {
+			return null;
+		}
+		Site newSite = new Site();
+		BeanUtils.copyProperties(site, newSite);
+		newSite.setId(null);
+		newSite.setName(newSite.getName() + "_copy");
+		newSite.setUseable(false);
+		return this.siteRepository.save(newSite);
 	}
 }

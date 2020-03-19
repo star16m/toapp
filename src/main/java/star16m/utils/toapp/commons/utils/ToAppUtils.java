@@ -1,10 +1,11 @@
 package star16m.utils.toapp.commons.utils;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import star16m.utils.toapp.ToAppConstants;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,6 +29,10 @@ public class ToAppUtils {
         return StringUtils.isEmpty(string);
     }
 
+    public static boolean isEmpty(List<?> list) {
+        return list == null || list.isEmpty();
+    }
+
     public static String replaceGroup(String orgString, String patternString) {
         return replaceGroup(orgString, patternString, 1);
     }
@@ -48,30 +53,36 @@ public class ToAppUtils {
         return StringUtils.replace(orgString, searchString, replaceString);
     }
 
-    public static DateTime getDateTime(String orgString) {
+    public static LocalDate getDateTime(String orgString) {
         if (isEmpty(orgString)) {
             return null;
         }
-        DateTime today = new DateTime();
-        DateTime dateTime = null;
+        LocalDate today = LocalDate.now();
+        LocalDate dateTime = null;
         if (orgString.matches("\\d{6,8}")) {
             String tmpString = replaceGroup(orgString, "(\\d{6,8})");
             if (tmpString.length() == 6) {
                 tmpString = "20" + tmpString;
             }
-            dateTime = DateTime.parse(tmpString, ToAppConstants.DATE_TIME_FORMATTER);
+            dateTime = LocalDate.parse(tmpString, ToAppConstants.DATE_TIME_FORMATTER);
         } else if (orgString.matches("\\d{4}\\.\\d{1,2}\\.\\d{1,2}")) {
-            dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(replaceGroup(orgString, "(\\d{4}\\.\\d{1,2}\\.\\d{1,2})")));
+            dateTime = LocalDate.parse(replaceGroup(orgString, "(\\d{4}\\.\\d{1,2}\\.\\d{1,2})"), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         } else if (orgString.matches("\\d{2}/\\d{2}")) {
             String tmpString = replaceGroup(orgString, "(\\d{2}/\\d{2})");
-            dateTime = DateTimeFormat.forPattern("yyyy/MM/dd").parseDateTime(today.getYear() + "/" + tmpString);
+            dateTime = LocalDate.parse(today.getYear() + "/" + tmpString, DateTimeFormatter.ofPattern("yyyy/MM/dd"));
         } else if (orgString.matches("\\d{2}\\.\\d{2}")) {
-            dateTime = new DateTime(DateTimeFormat.forPattern("yyyy.MM.dd").parseDateTime(today.getYear() + "." + replaceGroup(orgString, "(\\d{2}\\.\\d{2})")));
+            dateTime = LocalDate.parse(today.getYear() + "." + replaceGroup(orgString, "(\\d{2}\\.\\d{2})"), DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         } else if (orgString.matches("\\d{2}\\-\\d{2}")) {
-            dateTime = new DateTime(DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(today.getYear() + "-" + replaceGroup(orgString, "(\\d{2}\\-\\d{2})")));
-        } else if (orgString.matches("오늘")) {
-            dateTime = new DateTime();
+            dateTime = LocalDate.parse(today.getYear() + "-" + replaceGroup(orgString, "(\\d{2}\\-\\d{2})"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } else if (orgString.matches("오늘") || orgString.matches("\\d{1,2}:\\d{1,2}")) {
+            dateTime = LocalDate.now();
+        } else if (orgString.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\+\\-]\\d{2}:\\d{2}")) {
+            dateTime = LocalDate.parse(replaceGroup(orgString, "(\\d{4}\\-\\d{1,2}\\-\\d{1,2})"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
         return dateTime;
+    }
+
+    public static boolean isTargetDate(LocalDate date) {
+        return date.isBefore(LocalDate.now().minusDays(ToAppConstants.TARGET_DATE_RANGE));
     }
 }

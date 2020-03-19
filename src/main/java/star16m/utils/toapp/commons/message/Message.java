@@ -1,17 +1,14 @@
 package star16m.utils.toapp.commons.message;
 
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
-
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -19,13 +16,13 @@ import lombok.ToString;
 @ToString
 public class Message {
 
-	@Id @GeneratedValue
-	private Long id;
-	@NotNull
-	private String message;
-	@NotNull
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date createDate;
-	@NotNull
-	private String type;
+    @Id
+    @GeneratedValue
+    private Long id;
+    @NotNull
+    private String message;
+    @NotNull
+    private LocalDateTime createDate;
+    @NotNull
+    private String type;
 }

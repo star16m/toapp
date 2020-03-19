@@ -1,5 +1,6 @@
 package star16m.utils.toapp.commons.message;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class MessageService {
 		Message msg = new Message();
 		msg.setType(type);
 		msg.setMessage(message);
-		msg.setCreateDate(new Date());
+		msg.setCreateDate(LocalDateTime.now());
 		return messageRepository.save(msg);
 	}
 

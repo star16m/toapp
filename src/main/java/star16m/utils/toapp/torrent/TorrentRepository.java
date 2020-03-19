@@ -6,6 +6,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 public interface TorrentRepository extends JpaRepository<Torrent, String> {
     List<Torrent> findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
@@ -22,6 +23,7 @@ public interface TorrentRepository extends JpaRepository<Torrent, String> {
 
     List<Torrent> findTorrentByDateStringInOrderByDateStringDescKeywordAscTorrentFindDateDesc(List<String> targetDateStringList);
 
+    // @Query(value="", nativeQuery=true)
     @Transactional
     void deleteByDateStringNotIn(List<String> targetDateStringList);
 
