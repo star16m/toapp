@@ -23,9 +23,12 @@ import star16m.utils.toapp.torrent.TorrentRepository;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Transactional
@@ -116,11 +119,9 @@ public class TorrentCollector {
             for (Torrent.TorrentLinkInfo torrentLinkInfo : torrentDetailPageList) {
 
                 if (torrentLinkInfo.getCreateDate() != null && ToAppUtils.isTargetDate(torrentLinkInfo.getCreateDate())) {
-//					return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "torrent's date(" + torrentLinkInfo.getCreateDate() + ") is after base line(" + START_DATE_STRING + ")");
                     continue;
                 }
                 if (torrentRepository.existsByUrl(torrentLinkInfo.getLinkURL())) {
-                    // return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, true, "already exists torrent(by url).");
                     continue;
                 }
                 Torrent.TorrentSimpleInfo torrentInfo = null;
@@ -141,7 +142,7 @@ public class TorrentCollector {
                 log.warn("download name [{}], createDate [{}]", torrentLinkInfo.getTitle(), torrentLinkInfo.getCreateDate());
                 torrent.setDateString(ToAppConstants.DATE_TIME_FORMATTER.format(torrentLinkInfo.getCreateDate()));
                 torrent.setTorrentFindDate(LocalDate.now());
-                if (torrentRepository.exists(torrent.getMagnetCode())) {
+                if (torrentRepository.existsByMagnetCode(torrent.getMagnetCode())) {
                     alreadyExistsMagnetNum++;
                 } else {
                     torrentRepository.saveAndFlush(torrent);
@@ -155,8 +156,8 @@ public class TorrentCollector {
         return new CollectResult(site, keyword, totalElementNum, foundAndSaveTorrentNum, false, "already exists(by magnet hash) -> " + alreadyExistsMagnetNum);
     }
 
-    public String getTorrentURL(String torrentURL, String keywordString) {
-        return ToAppUtils.replace(torrentURL, ToAppConstants.SEARCH_KEYWORD, keywordString);
+    public String getTorrentURL(String torrentURL, String keywordString) throws UnsupportedEncodingException {
+        return ToAppUtils.replace(torrentURL, ToAppConstants.SEARCH_KEYWORD, URLEncoder.encode(keywordString, "UTF-8"));
     }
 
     public List<Torrent.TorrentLinkInfo> findTorrentLinks(Site site, String keyword) throws ToAppException {

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.select.Selector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import star16m.utils.toapp.commons.errors.ToAppException;
 import star16m.utils.toapp.commons.message.Message;
 import star16m.utils.toapp.commons.message.MessageService;
 import star16m.utils.toapp.commons.page.PageConnector;
@@ -16,6 +17,7 @@ import star16m.utils.toapp.torrent.TorrentService;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -104,36 +106,19 @@ public class ApiController {
                 && ToAppUtils.isEmpty(site.getTorrentMagnetHashSelector()) && ToAppUtils.isEmpty(site.getTorrentMagnetHashReplace())) {
             return ApiResponse.ok(TempExtractDetailResult.builder().detailPageSource(new PageConnector(detailRequest.getDetailPageUrl()).getElementsString()).build());
         }
-        Torrent.TorrentSimpleInfo tempExtractResult = null;
         PageConnector detailPageConnector = new PageConnector(detailRequest.getDetailPageUrl());
-        Torrent.TorrentSimpleInfo torrentPageInfo = new Torrent.TorrentSimpleInfo();
+        Torrent.TorrentLinkInfo linkInfo = new Torrent.TorrentLinkInfo();
+        linkInfo.setLinkURL(detailRequest.getDetailPageUrl());
+        linkInfo.setTitle(detailRequest.getTitle());
+        linkInfo.setSize(detailRequest.getSize());
         try {
-            if (ToAppUtils.isNotEmpty(detailPageConnector.find(site.getTorrentNameSelector()))) {
-                String torrentName = detailPageConnector.find(site.getTorrentNameSelector());
-                if (ToAppUtils.isNotEmpty(site.getTorrentNameReplace())) {
-                    torrentName = ToAppUtils.replaceGroup(torrentName, site.getTorrentNameReplace());
-                }
-                torrentPageInfo.setTorrentName(torrentName);
-            }
-            if (ToAppUtils.isNotEmpty(site.getTorrentSizeSelector())) {
-                String torrentSize = detailPageConnector.find(site.getTorrentSizeSelector());
-                if (ToAppUtils.isNotEmpty(site.getTorrentSizeReplace())) {
-                    torrentSize = ToAppUtils.replaceGroup(torrentSize, site.getTorrentSizeReplace());
-                }
-                torrentPageInfo.setTorrentSize(torrentSize);
-            }
-            if (ToAppUtils.isNotEmpty(site.getTorrentMagnetHashSelector())) {
-                String torrentMagnet = detailPageConnector.find(site.getTorrentMagnetHashSelector());
-                if (ToAppUtils.isNotEmpty(site.getTorrentMagnetHashReplace())) {
-                    torrentMagnet = ToAppUtils.replaceGroup(torrentMagnet, site.getTorrentMagnetHashReplace());
-                }
-                torrentPageInfo.setTorrentMagnet(torrentMagnet);
-            }
-        } catch (Selector.SelectorParseException e) {
+            return ApiResponse.ok(TempExtractDetailResult.builder()
+                    .detailPageSource(detailPageConnector.getElementsString())
+                    .extractDetailResult(this.torrentCollector.findTorrentInfo(linkInfo, site)).build());
+        } catch (ToAppException e) {
             log.error("Error occurred while parsing detail page.", e);
             return ApiResponse.of(ApiHeader.PARSE_ERROR, null);
         }
-        return ApiResponse.ok(TempExtractDetailResult.builder().detailPageSource(detailPageConnector.getElementsString()).extractDetailResult(torrentPageInfo).build());
     }
 
     @DeleteMapping("site/{siteId}")
@@ -148,8 +133,8 @@ public class ApiController {
      * =====================================================================
      */
     @GetMapping("keywords")
-    public List<Keyword> getKeywords() {
-        return this.keywordRepository.findAll();
+    public ApiResponse<List<Keyword>> getKeywords() {
+        return ApiResponse.ok(this.keywordRepository.findAll());
     }
 
     @PostMapping("keywords")
@@ -162,11 +147,11 @@ public class ApiController {
 
     @DeleteMapping("keywords/{keywordId}")
     public ApiResponse<ApiResponse.EmptyBody> deleteKeyword(@PathVariable Long keywordId) {
-        Keyword keyword = this.keywordRepository.findOne(keywordId);
+        Keyword keyword = this.keywordRepository.findById(keywordId).orElse(null);
         if (keyword == null) {
             return ApiResponse.emptyBody(ApiHeader.NOT_FOUND);
         }
-        this.keywordRepository.delete(keywordId);
+        this.keywordRepository.deleteById(keywordId);
         return ApiResponse.emptyBody(ApiHeader.SUCCESS);
     }
 
@@ -188,5 +173,16 @@ public class ApiController {
     @GetMapping("datas")
     public ApiResponse<List<Torrent>> getDatas() {
         return ApiResponse.ok(this.torrentService.selectAll());
+    }
+    @PostMapping("datas/filter")
+    public ApiResponse<List<Torrent>> getDataByKeyword(@RequestBody ApiSimpleRequest<List<String>> dataFilterRequest) {
+        if (dataFilterRequest == null || ToAppUtils.isEmpty(dataFilterRequest.getRequest())) {
+            return getDatas();
+        }
+        return ApiResponse.ok(this.torrentService.selectByKeywords(dataFilterRequest.getRequest()));
+    }
+    @PostMapping("data/download")
+    public ApiResponse<Torrent> downloadTorrent(@RequestBody ApiSimpleRequest<String> downloadRequest){
+        return ApiResponse.ok(this.torrentService.download(downloadRequest.getRequest()));
     }
 }

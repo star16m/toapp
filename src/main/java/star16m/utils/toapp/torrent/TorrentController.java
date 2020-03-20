@@ -80,7 +80,7 @@ public class TorrentController {
         log.info("Current keyword = {}", currentKeyword);
         log.info("MODEL[{}]" + model);
         log.info("patched torrent ::: " + magnetHash);
-        Torrent torrent = torrentRepository.findOne(magnetHash);
+        Torrent torrent = torrentRepository.findByMagnetCode(magnetHash);
         torrent.setDownload(true);
         torrent.setDownloadDate(LocalDate.now());
         torrentRepository.save(torrent);

@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class TempSiteDetailRequest {
     private Site site;
     private String detailPageUrl;
+    private String title;
+    private String size;
 }

@@ -38,23 +38,23 @@ public class SiteController {
 	private SiteService siteService;
 	@Autowired
 	private SiteRepository siteRepository;
-	
-	@PatchMapping
-	public ResponseEntity<?> editSiteEnable(@RequestParam("siteId") Long siteId, @RequestParam("enabled") Boolean enabled, Model model) {
-		Site site = siteRepository.findById(siteId);
-		site.setUseable(enabled);
-		siteRepository.save(site);
-		return new ResponseEntity<Site>(site, HttpStatus.OK);
-	}
-	@DeleteMapping("/{siteId}")
-	public ResponseEntity<?> deleteSite(@PathVariable("siteId") Long siteId, Model model) {
-		Site site = siteRepository.findById(siteId);
-		if (site == null) {
-			return ResponseEntity.badRequest().build();
-		}
-		siteRepository.delete(site);
-		return ResponseEntity.noContent().build();
-	}
+//
+//	@PatchMapping
+//	public ResponseEntity<?> editSiteEnable(@RequestParam("siteId") Long siteId, @RequestParam("enabled") Boolean enabled, Model model) {
+//		Site site = siteRepository.findById(siteId);
+//		site.setUseable(enabled);
+//		siteRepository.save(site);
+//		return new ResponseEntity<Site>(site, HttpStatus.OK);
+//	}
+//	@DeleteMapping("/{siteId}")
+//	public ResponseEntity<?> deleteSite(@PathVariable("siteId") Long siteId, Model model) {
+//		Site site = siteRepository.findById(siteId);
+//		if (site == null) {
+//			return ResponseEntity.badRequest().build();
+//		}
+//		siteRepository.delete(site);
+//		return ResponseEntity.noContent().build();
+//	}
 	@GetMapping
 	public String site(@SortDefault(sort="id", direction=Direction.DESC) Sort sort, Model model) {
 		log.info("try findAll torrent site.");

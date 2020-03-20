@@ -34,7 +34,7 @@ public class ToappApplicationTests {
 	@Autowired
 	private TorrentRepository torrentRepository;
 
-	private Site getSite() {
+	private Site getSiteVery() {
 
 		this.siteRepository.deleteAll();
 		String targetSearchUrl = "https://torrentvery.com/torrent_ent?bo_table=torrent_ent&sca=%EC%98%88%EB%8A%A5&stx=[KEYWORD]";
@@ -61,6 +61,33 @@ public class ToappApplicationTests {
 
 		return this.siteRepository.save(site);
 	}
+	private Site getSiteQQ() {
+
+		this.siteRepository.deleteAll();
+		String targetSearchUrl = "https://torrentqq22.com/search?q=[KEYWORD]&sm=top.s";
+		List<Site> allSite = this.siteRepository.findAll();
+		for (Site site : allSite) {
+			if (site.getSearchUrl().equals(targetSearchUrl)) {
+				return site;
+			}
+		}
+		Site site = new Site();
+		site.setName("testSite");
+		site.setSearchUrl(targetSearchUrl);
+		site.setPageSelector("#searchresult > li");
+		site.setNameSelector("div.wr-subject a.subject");
+		site.setDateSelector("div.wr-size");
+		site.setSizeSelector("div.wr-date");
+		site.setTorrentNameSelector("");
+		site.setTorrentNameReplace("");
+		site.setTorrentSizeSelector("");
+		site.setTorrentSizeReplace("");
+		site.setTorrentMagnetHashSelector("a.btn-magnet");
+		site.setTorrentMagnetHashReplace("btih:(.+)'");
+		site.setUseable(true);
+
+		return this.siteRepository.save(site);
+	}
 
 	private Keyword getKeyword() {
 		Keyword keyword = new Keyword();
@@ -74,7 +101,7 @@ public class ToappApplicationTests {
 
 	@Test
 	public void testCollect() throws ToAppException {
-		Site site = getSite();
+		Site site = getSiteQQ();
 		Keyword keyword = getKeyword();
 
 		assertThat(site).isNotNull();
@@ -86,6 +113,10 @@ public class ToappApplicationTests {
 		});
 		CollectResult collectResult = this.torrentCollector.collect(site, keyword);
 		log.info("successfully collected. [{}]", collectResult);
+	}
 
+	@Test
+	public void clearTorrent() throws Exception {
+		this.torrentRepository.deleteAll();
 	}
 }

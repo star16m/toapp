@@ -1,5 +1,6 @@
 package star16m.utils.toapp.site;
 
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import javax.transaction.Transactional;
@@ -26,7 +27,12 @@ public class SiteService {
 			throw new ToAppException("Not found site info.");
 		}
 		Site site = new Site();
-		site.setSearchUrl(this.torrentCollector.getTorrentURL(siteInfo.getSiteSearchUrl(), siteInfo.getSiteKeyword()));
+		try {
+			site.setSearchUrl(this.torrentCollector.getTorrentURL(siteInfo.getSiteSearchUrl(), siteInfo.getSiteKeyword()));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			throw new ToAppException("UnsupportedEncode exception", e);
+		}
 		site.setPageSelector(siteInfo.getPageSelector());
 		site.setNameSelector(siteInfo.getNameSelector());
 		site.setSizeSelector(siteInfo.getSizeSelector());
@@ -35,7 +41,7 @@ public class SiteService {
 		return foundResult;
 	}
 	public Site getSiteById(Long siteId) {
-		return this.siteRepository.findById(siteId);
+		return this.siteRepository.findById(siteId).orElse(null);
 	}
 	public List<Site> findAll() {
 		return this.siteRepository.findByOrderByIdAsc();
@@ -46,7 +52,7 @@ public class SiteService {
     }
 
 	public void deleteTempSite(Long siteId) {
-		this.siteRepository.delete(siteId);
+		this.siteRepository.deleteById(siteId);
 	}
 
 	public Site save(Site realSite) {
@@ -54,7 +60,7 @@ public class SiteService {
 	}
 
 	public Site copySiteBySiteId(Long siteId) {
-		Site site = this.siteRepository.findById(siteId);
+		Site site = this.siteRepository.findById(siteId).orElse(null);
 		if (site == null) {
 			return null;
 		}
