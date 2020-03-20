@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Controller
+//@Controller
 @RequestMapping("torrent")
 @Slf4j
 public class TorrentController {

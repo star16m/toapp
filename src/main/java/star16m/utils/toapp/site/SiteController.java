@@ -30,7 +30,7 @@ import star16m.utils.toapp.commons.errors.ToAppException;
 import star16m.utils.toapp.commons.utils.ToAppUtils;
 import star16m.utils.toapp.torrent.Torrent;
 
-@Controller
+//@Controller
 @RequestMapping("site")
 @Slf4j
 public class SiteController {

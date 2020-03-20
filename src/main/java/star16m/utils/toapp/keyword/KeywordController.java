@@ -12,7 +12,7 @@ import star16m.utils.toapp.torrent.TorrentRepository;
 
 import java.util.List;
 
-@Controller
+// @Controller
 @RequestMapping("keyword")
 @Slf4j
 public class KeywordController {
