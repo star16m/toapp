@@ -175,11 +175,29 @@ public class ApiController {
         return ApiResponse.ok(this.torrentService.selectAll());
     }
     @PostMapping("datas/filter")
-    public ApiResponse<List<Torrent>> getDataByKeyword(@RequestBody ApiSimpleRequest<List<String>> dataFilterRequest) {
-        if (dataFilterRequest == null || ToAppUtils.isEmpty(dataFilterRequest.getRequest())) {
+    public ApiResponse<List<Torrent>> getDataByKeyword(@RequestBody ApiSimpleRequest<ApiFilterRequest> dataFilterRequest) {
+        if (dataFilterRequest == null || dataFilterRequest.getRequest() == null) {
             return getDatas();
         }
-        return ApiResponse.ok(this.torrentService.selectByKeywords(dataFilterRequest.getRequest()));
+        List<Torrent> torrentList = null;
+        switch (dataFilterRequest.getRequest().getFilterRequestType()) {
+            case KEYWORD:
+                Keyword filterKeyword = this.keywordRepository.findById(dataFilterRequest.getRequest().getFilterTarget()).orElse(null);
+                if (filterKeyword != null) {
+                    torrentList = this.torrentService.selectByKeywords(filterKeyword.getKeyword());
+                }
+                break;
+            case TOP:
+                torrentList = this.torrentService.selectByTop(dataFilterRequest.getRequest().getFilterTarget());
+                break;
+            case LAST_DAYS:
+                torrentList = this.torrentService.selectByLastDays(dataFilterRequest.getRequest().getFilterTarget());
+                break;
+        }
+        if (!ToAppUtils.isEmpty(torrentList)) {
+            return getDatas();
+        }
+        return ApiResponse.ok(torrentList);
     }
     @PostMapping("data/download")
     public ApiResponse<Torrent> downloadTorrent(@RequestBody ApiSimpleRequest<String> downloadRequest){

@@ -78,8 +78,8 @@ public class ToappApplicationTests {
 		site.setSearchUrl(targetSearchUrl);
 		site.setPageSelector("#searchresult > li");
 		site.setNameSelector("div.wr-subject a.subject");
-		site.setDateSelector("div.wr-size");
-		site.setSizeSelector("div.wr-date");
+		site.setDateSelector("div.wr-date");
+		site.setSizeSelector("div.wr-size");
 		site.setTorrentNameSelector("");
 		site.setTorrentNameReplace("");
 		site.setTorrentSizeSelector("");
@@ -120,5 +120,19 @@ public class ToappApplicationTests {
 	@Test
 	public void clearTorrent() throws Exception {
 		this.torrentRepository.deleteAll();
+	}
+
+	@Test
+	public void findTop() throws Exception {
+		List<Torrent> topByOrderByDateDesc = this.torrentRepository.findTopOrderByDateStringDesc(3L);
+		assertThat(topByOrderByDateDesc).isNotNull();
+		assertThat(topByOrderByDateDesc).hasSize(3);
+	}
+
+	@Test
+	public void findLastDays() throws Exception {
+		List<Torrent> last3DaysTorrent = this.torrentRepository.findLastDaysOrderByDateStringDesc(3L);
+		assertThat(last3DaysTorrent).isNotNull();
+		assertThat(last3DaysTorrent).hasSizeGreaterThan(10);
 	}
 }

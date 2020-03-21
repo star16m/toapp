@@ -16,8 +16,8 @@ public class TorrentService {
 	public List<Torrent> selectAll() {
 		return repository.findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
 	}
-	public List<Torrent> selectByKeywords(List<String> keywordList) {
-		return this.repository.findAllTorrentByKeywordInOrderByDateStringDescKeywordAscTorrentFindDateDesc(keywordList);
+	public List<Torrent> selectByKeywords(String keyword) {
+		return this.repository.findAllTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(keyword);
 	}
 	public Torrent create(Torrent torrent) {
 		return repository.save(torrent);
@@ -37,5 +37,13 @@ public class TorrentService {
 		torrent.setDownload(true);
 		torrent.setDownloadDate(LocalDate.now());
 		return this.repository.save(torrent);
+	}
+
+	public List<Torrent> selectByTop(Long top) {
+		return this.repository.findTopOrderByDateStringDesc(top);
+	}
+
+	public List<Torrent> selectByLastDays(Long last) {
+		return this.repository.findLastDaysOrderByDateStringDesc(last);
 	}
 }
