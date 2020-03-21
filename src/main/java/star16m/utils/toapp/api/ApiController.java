@@ -194,7 +194,7 @@ public class ApiController {
                 torrentList = this.torrentService.selectByLastDays(dataFilterRequest.getRequest().getFilterTarget());
                 break;
         }
-        if (!ToAppUtils.isEmpty(torrentList)) {
+        if (ToAppUtils.isEmpty(torrentList)) {
             return getDatas();
         }
         return ApiResponse.ok(torrentList);
