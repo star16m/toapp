@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
 
 public interface TorrentRepository extends JpaRepository<Torrent, String> {
     List<Torrent> findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
@@ -40,4 +41,7 @@ public interface TorrentRepository extends JpaRepository<Torrent, String> {
     @Query(value = "select t.* from torrent t where torrent_find_date > DATEADD('DAY', -:last, CURRENT_DATE) order by date_string desc, torrent_find_date desc", nativeQuery = true)
 //    @Query(value = "select t.* from torrent t order by date_string desc, torrent_find_date desc limit :last", nativeQuery = true)
     List<Torrent> findLastDaysOrderByDateStringDesc(Long last);
+
+    @Query(value = "select k.id, count(*) as cnt from torrent t join keyword k on t.keyword = k.keyword group by k.keyword", nativeQuery = true)
+    List<Map<String, Long>> groupByKeyword();
 }

@@ -2,6 +2,7 @@ package star16m.utils.toapp.torrent;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -37,6 +38,10 @@ public class TorrentService {
 		torrent.setDownload(true);
 		torrent.setDownloadDate(LocalDate.now());
 		return this.repository.save(torrent);
+	}
+
+	public List<Map<String, Long>> groupByKeyword() {
+		return this.repository.groupByKeyword();
 	}
 
 	public List<Torrent> selectByTop(Long top) {

@@ -1,7 +1,6 @@
 package star16m.utils.toapp.api;
 
 import lombok.extern.slf4j.Slf4j;
-import org.jsoup.select.Selector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import star16m.utils.toapp.commons.errors.ToAppException;
@@ -17,8 +16,10 @@ import star16m.utils.toapp.torrent.TorrentService;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 import java.io.IOException;
-import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequestMapping("/api")
@@ -34,6 +35,27 @@ public class ApiController {
     private TorrentService torrentService;
     @Autowired
     private TorrentCollector torrentCollector;
+
+
+    /**
+     * =====================================================================
+     * FILTERS
+     * =====================================================================
+     */
+    @GetMapping("filters")
+    public ApiResponse<List<ApiDataInfo>> getFilters() {
+        List<Map<String, Long>> keywordMapList = this.torrentService.groupByKeyword();
+        keywordMapList.stream().map(k-> ApiFilterRequest.builder()
+                .filterRequestType(FilterRequestType.KEYWORD)
+                .filterTarget(k.get(""))
+                .build())
+                .collect(Collectors.toList());
+        return ApiResponse.ok(Arrays.asList(
+                ApiFilterRequest.builder().filterRequestType(FilterRequestType.LAST_DAYS).filterTarget(3L).build(),
+                ApiFilterRequest.builder().filterRequestType(FilterRequestType.TOP).filterTarget(10L).build()
+                ).addAll()
+        );
+    }
 
     /**
      * =====================================================================
@@ -81,6 +103,7 @@ public class ApiController {
                 .build();
         return ApiResponse.ok(tempExtractResult);
     }
+
     @PostMapping("site/{siteId}/copy")
     public ApiResponse<Site> copySite(@PathVariable Long siteId) throws IOException {
         Site site = this.siteService.copySiteBySiteId(siteId);
@@ -174,6 +197,7 @@ public class ApiController {
     public ApiResponse<List<Torrent>> getDatas() {
         return ApiResponse.ok(this.torrentService.selectAll());
     }
+
     @PostMapping("datas/filter")
     public ApiResponse<List<Torrent>> getDataByKeyword(@RequestBody ApiSimpleRequest<ApiFilterRequest> dataFilterRequest) {
         if (dataFilterRequest == null || dataFilterRequest.getRequest() == null) {
@@ -199,8 +223,9 @@ public class ApiController {
         }
         return ApiResponse.ok(torrentList);
     }
+
     @PostMapping("data/download")
-    public ApiResponse<Torrent> downloadTorrent(@RequestBody ApiSimpleRequest<String> downloadRequest){
+    public ApiResponse<Torrent> downloadTorrent(@RequestBody ApiSimpleRequest<String> downloadRequest) {
         return ApiResponse.ok(this.torrentService.download(downloadRequest.getRequest()));
     }
 }
