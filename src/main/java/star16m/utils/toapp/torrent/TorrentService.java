@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import star16m.utils.toapp.api.SimpleMap;
 
 @Service
 @Transactional
@@ -16,6 +17,9 @@ public class TorrentService {
 	private TorrentRepository repository;
 	public List<Torrent> selectAll() {
 		return repository.findAllTorrentByOrderByDateStringDescKeywordAscTorrentFindDateDesc();
+	}
+	public Long count() {
+		return repository.count();
 	}
 	public List<Torrent> selectByKeywords(String keyword) {
 		return this.repository.findAllTorrentByKeywordOrderByDateStringDescKeywordAscTorrentFindDateDesc(keyword);

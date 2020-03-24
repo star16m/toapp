@@ -35,6 +35,8 @@ public class ApiController {
     private TorrentService torrentService;
     @Autowired
     private TorrentCollector torrentCollector;
+    @Autowired
+    private ApiService apiService;
 
 
     /**
@@ -42,19 +44,12 @@ public class ApiController {
      * FILTERS
      * =====================================================================
      */
-    @GetMapping("filters")
-    public ApiResponse<List<ApiDataInfo>> getFilters() {
-        List<Map<String, Long>> keywordMapList = this.torrentService.groupByKeyword();
-        keywordMapList.stream().map(k-> ApiFilterRequest.builder()
-                .filterRequestType(FilterRequestType.KEYWORD)
-                .filterTarget(k.get(""))
-                .build())
-                .collect(Collectors.toList());
-        return ApiResponse.ok(Arrays.asList(
-                ApiFilterRequest.builder().filterRequestType(FilterRequestType.LAST_DAYS).filterTarget(3L).build(),
-                ApiFilterRequest.builder().filterRequestType(FilterRequestType.TOP).filterTarget(10L).build()
-                ).addAll()
-        );
+    @GetMapping("data-info")
+    public ApiResponse<List<ApiDataInfo<String>>> getDataInfo() {
+        List<ApiDataInfo<String>> dataInfoList = this.apiService.getDataInfos();
+        Long totalCount = this.torrentService.count();
+        dataInfoList.add(0, ApiDataInfo.<String>builder().filterRequestType(FilterRequestType.ALL).filterTarget("0").filteredResult(totalCount).build());
+        return ApiResponse.ok(dataInfoList);
     }
 
     /**
@@ -206,16 +201,16 @@ public class ApiController {
         List<Torrent> torrentList = null;
         switch (dataFilterRequest.getRequest().getFilterRequestType()) {
             case KEYWORD:
-                Keyword filterKeyword = this.keywordRepository.findById(dataFilterRequest.getRequest().getFilterTarget()).orElse(null);
+                Keyword filterKeyword = this.keywordRepository.findByKeyword(dataFilterRequest.getRequest().getFilterTarget());
                 if (filterKeyword != null) {
                     torrentList = this.torrentService.selectByKeywords(filterKeyword.getKeyword());
                 }
                 break;
             case TOP:
-                torrentList = this.torrentService.selectByTop(dataFilterRequest.getRequest().getFilterTarget());
+                torrentList = this.torrentService.selectByTop(Long.valueOf(dataFilterRequest.getRequest().getFilterTarget()));
                 break;
             case LAST_DAYS:
-                torrentList = this.torrentService.selectByLastDays(dataFilterRequest.getRequest().getFilterTarget());
+                torrentList = this.torrentService.selectByLastDays(Long.valueOf(dataFilterRequest.getRequest().getFilterTarget()));
                 break;
         }
         if (ToAppUtils.isEmpty(torrentList)) {

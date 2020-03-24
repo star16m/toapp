@@ -7,6 +7,8 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import star16m.utils.toapp.api.ApiDataInfo;
+import star16m.utils.toapp.api.ApiService;
 import star16m.utils.toapp.commons.errors.ToAppException;
 import star16m.utils.toapp.keyword.Keyword;
 import star16m.utils.toapp.keyword.KeywordRepository;
@@ -35,6 +37,8 @@ public class ToappApplicationTests {
 	private TorrentCollector torrentCollector;
 	@Autowired
 	private TorrentRepository torrentRepository;
+	@Autowired
+	private ApiService apiService;
 
 	private Site getSiteVery() {
 
@@ -134,5 +138,14 @@ public class ToappApplicationTests {
 		List<Torrent> last3DaysTorrent = this.torrentRepository.findLastDaysOrderByDateStringDesc(3L);
 		assertThat(last3DaysTorrent).isNotNull();
 		assertThat(last3DaysTorrent).hasSizeGreaterThan(10);
+	}
+
+	@Test
+	public void getAllFilters() throws Exception {
+		List<ApiDataInfo<String>> dataInfos = this.apiService.getDataInfos();
+		dataInfos.stream().forEach(d -> {
+			System.out.println(d);
+		});
+
 	}
 }
