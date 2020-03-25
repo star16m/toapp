@@ -195,7 +195,7 @@ public class ApiController {
 
     @PostMapping("datas/filter")
     public ApiResponse<List<Torrent>> getDataByKeyword(@RequestBody ApiSimpleRequest<ApiFilterRequest> dataFilterRequest) {
-        if (dataFilterRequest == null || dataFilterRequest.getRequest() == null) {
+        if (dataFilterRequest == null || dataFilterRequest.getRequest() == null || dataFilterRequest.getRequest().getFilterRequestType() == null) {
             return getDatas();
         }
         List<Torrent> torrentList = null;
