@@ -23,6 +23,6 @@ public class MessageService {
 	}
 
     public List<Message> findAll() {
-		return this.messageRepository.findAll();
+		return this.messageRepository.findMessageByOrderByCreateDateDesc();
     }
 }
