@@ -28,7 +28,6 @@ import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @Transactional
@@ -49,8 +48,7 @@ public class TorrentCollector {
     private Site currentEditSite;
     private PageConnector currentDownloadedPage;
 
-    //    @Scheduled(initialDelay = 1 * 60 * 1000, fixedDelay = 30 * 60 * 1000)
-    @Scheduled(initialDelay = 1 * 1000, fixedDelay = 30 * 60 * 1000)
+    @Scheduled(cron = "0 3/33 10-22 * * *")
     public void collect() {
         List<Site> siteList = siteRepository.findByUseableTrue();
         List<Keyword> keywordList = keywordRepository.findAll();
@@ -76,13 +74,14 @@ public class TorrentCollector {
     }
 
     /**
-     * 매일
+     * 매일 저녁 11시 5분에 데이터 정리
      */
-//    @Scheduled(initialDelay = 1 * 60 * 1000, fixedDelay = 360 * 60 * 1000)
-    //@Scheduled(initialDelay = 1 * 1000, fixedDelay = 360 * 60 * 1000)
-    public void resetTarget() {
-//        torrentRepository.deleteByDateStringNotIn(targetDateString);
-        messageRepository.deleteByCreateDateLessThan(LocalDate.now().minusDays(1));
+    @Scheduled(cron = "0 5 23 * * *")
+    @Transactional
+    public void cleanOldData() {
+        log.info("try clean Old Data.");
+        this.torrentRepository.deleteOldData(ToAppConstants.TARGET_DATE_RANGE);
+        this.messageRepository.deleteOLdMessage(ToAppConstants.MESSAGE_AVAILABLE_DAY);
     }
 
     public void collect(String keywordString) {
@@ -92,19 +91,14 @@ public class TorrentCollector {
         log.info("found keyword [{}]", searchKeyword);
         final List<Site> siteList = siteRepository.findByUseableTrue();
         if (siteList != null && siteList.size() > 0) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    siteList.stream().forEach(site -> {
-                        try {
-                            CollectResult result = collect(site, searchKeyword);
-                            commonService.saveMessage("col-key", result.getResultString());
-                        } catch (ToAppException e) {
-                            log.warn(e.getMessage());
-                        }
-                    });
+            new Thread(() -> siteList.stream().forEach(site -> {
+                try {
+                    CollectResult result = collect(site, searchKeyword);
+                    commonService.saveMessage("col-key", result.getResultString());
+                } catch (ToAppException e) {
+                    log.warn(e.getMessage());
                 }
-            }).start();
+            })).start();
         }
     }
 

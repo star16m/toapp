@@ -55,4 +55,8 @@ public class TorrentService {
 	public List<Torrent> selectByLastDays(Long last) {
 		return this.repository.findLastDaysOrderByDateStringDesc(last);
 	}
+
+    public void deleteByKeyword(String keyword) {
+		this.repository.deleteByKeyword(keyword);
+    }
 }

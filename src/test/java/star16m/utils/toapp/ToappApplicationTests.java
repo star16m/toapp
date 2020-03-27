@@ -146,6 +146,5 @@ public class ToappApplicationTests {
 		dataInfos.stream().forEach(d -> {
 			System.out.println(d);
 		});
-
 	}
 }

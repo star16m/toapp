@@ -16,10 +16,7 @@ import star16m.utils.toapp.torrent.TorrentService;
 import star16m.utils.toapp.torrent.collector.TorrentCollector;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequestMapping("/api")
@@ -160,7 +157,10 @@ public class ApiController {
         if (keyword == null || ToAppUtils.isEmpty(keyword.getKeyword())) {
             return ApiResponse.of(ApiHeader.SUBJECT_SHOULD_NOT_BE_EMPTY, null);
         }
-        return ApiResponse.ok(this.keywordRepository.save(keyword));
+        Keyword newKeyword = this.keywordRepository.save(keyword);
+        log.info("create new keyword. try collect that. keyword[{}]", newKeyword.getKeyword());
+        torrentCollector.collect(newKeyword.getKeyword());
+        return ApiResponse.ok(newKeyword);
     }
 
     @DeleteMapping("keywords/{keywordId}")
@@ -170,6 +170,7 @@ public class ApiController {
             return ApiResponse.emptyBody(ApiHeader.NOT_FOUND);
         }
         this.keywordRepository.deleteById(keywordId);
+        this.torrentService.deleteByKeyword(keyword.getKeyword());
         return ApiResponse.emptyBody(ApiHeader.SUCCESS);
     }
 
