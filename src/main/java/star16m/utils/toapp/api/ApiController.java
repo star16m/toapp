@@ -162,6 +162,15 @@ public class ApiController {
         torrentCollector.collect(newKeyword.getKeyword());
         return ApiResponse.ok(newKeyword);
     }
+    @PostMapping("keywords/{keywordId}/collect")
+    public ApiResponse<ApiResponse.EmptyBody> collectKeyword(@PathVariable Long keywordId) {
+        Keyword keyword = this.keywordRepository.findById(keywordId).orElse(null);
+        if (keyword == null) {
+            return ApiResponse.emptyBody(ApiHeader.NOT_FOUND);
+        }
+        this.torrentCollector.collect(keyword.getKeyword());
+        return ApiResponse.emptyBody(ApiHeader.SUCCESS);
+    }
 
     @DeleteMapping("keywords/{keywordId}")
     public ApiResponse<ApiResponse.EmptyBody> deleteKeyword(@PathVariable Long keywordId) {
@@ -213,9 +222,8 @@ public class ApiController {
             case LAST_DAYS:
                 torrentList = this.torrentService.selectByLastDays(Long.valueOf(dataFilterRequest.getRequest().getFilterTarget()));
                 break;
-        }
-        if (ToAppUtils.isEmpty(torrentList)) {
-            return getDatas();
+            default:
+                return getDatas();
         }
         return ApiResponse.ok(torrentList);
     }
