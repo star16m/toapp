@@ -25,4 +25,5 @@ nbdist/
 .nb-gradle/
 
 toapp_db/
+/logs/
 /logs/toapp.log
