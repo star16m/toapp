@@ -112,7 +112,7 @@ public class TorrentCollector {
             log.info("try to connect torrent detail page [{}]", torrentDetailPageList);
             for (Torrent.TorrentLinkInfo torrentLinkInfo : torrentDetailPageList) {
 
-                if (torrentLinkInfo.getCreateDate() != null && ToAppUtils.isTargetDate(torrentLinkInfo.getCreateDate())) {
+                if (torrentLinkInfo.getCreateDate() != null && !ToAppUtils.isTargetDate(torrentLinkInfo.getCreateDate())) {
                     continue;
                 }
                 if (torrentRepository.existsByUrl(torrentLinkInfo.getLinkURL())) {
