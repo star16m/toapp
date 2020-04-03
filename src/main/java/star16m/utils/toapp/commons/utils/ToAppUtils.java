@@ -92,6 +92,7 @@ public class ToAppUtils {
     }
 
     public static boolean isTargetDate(LocalDate date) {
-        return date.isBefore(LocalDate.now().minusDays(ToAppConstants.TARGET_DATE_RANGE));
+//        return date.isBefore(LocalDate.now().minusDays(ToAppConstants.TARGET_DATE_RANGE));
+        return true;
     }
 }
