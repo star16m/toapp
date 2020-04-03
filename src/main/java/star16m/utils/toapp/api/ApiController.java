@@ -88,7 +88,10 @@ public class ApiController {
     @PostMapping("site/{siteId}")
     public ApiResponse<TempExtractResult> getSiteDetail(@PathVariable Long siteId) throws IOException {
         Site site = this.siteService.getSiteById(siteId);
-        String result = this.torrentCollector.downloadTorrentSite(site);
+        String result = null;
+        if (site.isUseable()) {
+            result = this.torrentCollector.downloadTorrentSite(site);
+        }
         TempExtractResult tempExtractResult = TempExtractResult.builder()
                 .site(site)
                 .result(result)
