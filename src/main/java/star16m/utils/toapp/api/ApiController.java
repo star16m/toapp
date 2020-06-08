@@ -86,7 +86,7 @@ public class ApiController {
     }
 
     @PostMapping("site/{siteId}")
-    public ApiResponse<TempExtractResult> getSiteDetail(@PathVariable Long siteId) throws IOException {
+    public ApiResponse<TempExtractResult> getSiteDetail(@PathVariable Long siteId) throws Exception {
         Site site = this.siteService.getSiteById(siteId);
         String result = null;
         if (site.isUseable()) {
@@ -106,7 +106,7 @@ public class ApiController {
     }
 
     @PostMapping("site/{siteId}/find")
-    public ApiResponse<TempExtractResult> findSiteSource(@PathVariable Long siteId, @RequestBody Site siteDetail) throws IOException {
+    public ApiResponse<TempExtractResult> findSiteSource(@PathVariable Long siteId, @RequestBody Site siteDetail) throws Exception {
         log.info("request site. siteId[{}], request[{}]", siteId, siteDetail);
         TempExtractResult tempExtractResult = this.torrentCollector.findTempSite(siteDetail);
         if (tempExtractResult == null) {
@@ -116,7 +116,7 @@ public class ApiController {
     }
 
     @PostMapping("site/{siteId}/findDetail")
-    public ApiResponse<TempExtractDetailResult> findSiteDetailSource(@PathVariable Long siteId, @RequestBody TempSiteDetailRequest detailRequest) throws IOException {
+    public ApiResponse<TempExtractDetailResult> findSiteDetailSource(@PathVariable Long siteId, @RequestBody TempSiteDetailRequest detailRequest) throws Exception {
         log.info("request detail site. siteId[{}], detailRequest[{}]", siteId, detailRequest);
         Site site = detailRequest.getSite();
         if (ToAppUtils.isEmpty(site.getTorrentNameSelector()) && ToAppUtils.isEmpty(site.getTorrentNameReplace())

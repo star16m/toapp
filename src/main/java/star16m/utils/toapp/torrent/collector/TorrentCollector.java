@@ -179,7 +179,7 @@ public class TorrentCollector {
                     foundResult.add(link);
                 }
             });
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ToAppException(e);
         }
         return foundResult;
@@ -219,7 +219,7 @@ public class TorrentCollector {
             torrentPageInfo.setTorrentMagnet(torrentMagnet);
             log.info("founded torrentName[{}], torrentSize[{}], torrentMagnet[{}]", torrentPageInfo.getTorrentName(), torrentPageInfo.getTorrentSize(), torrentPageInfo.getTorrentMagnet());
             return torrentPageInfo;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new ToAppException(e);
         }
     }
@@ -229,7 +229,7 @@ public class TorrentCollector {
         this.currentEditSite = null;
     }
 
-    public String downloadTorrentSite(Site site) throws IOException {
+    public String downloadTorrentSite(Site site) throws Exception {
         Keyword keyword = this.keywordRepository.findAll().stream().findFirst().orElse(null);
         if (keyword == null) {
             return null;
@@ -239,11 +239,11 @@ public class TorrentCollector {
         return this.currentDownloadedPage.getElementsString();
     }
 
-    public TempExtractResult findTempSite(Site site) throws IOException {
+    public TempExtractResult findTempSite(Site site) throws Exception {
         if (this.currentDownloadedPage == null || this.currentEditSite == null) {
             return null;
         }
-        if (this.currentEditSite.getId() != site.getId()) {
+        if (!this.currentEditSite.getId().equals(site.getId())) {
             return null;
         }
         if (!this.currentEditSite.getSearchUrl().equals(site.getSearchUrl())) {
