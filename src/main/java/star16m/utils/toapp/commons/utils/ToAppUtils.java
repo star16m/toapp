@@ -87,6 +87,8 @@ public class ToAppUtils {
             dateTime = LocalDate.now();
         } else if (orgString.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[\\+\\-]\\d{2}:\\d{2}")) {
             dateTime = LocalDate.parse(replaceGroup(orgString, "(\\d{4}\\-\\d{1,2}\\-\\d{1,2})"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        } else if (orgString.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+            dateTime = LocalDate.parse(replaceGroup(orgString, "(\\d{4}\\-\\d{1,2}\\-\\d{1,2})"), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
         return dateTime;
     }
